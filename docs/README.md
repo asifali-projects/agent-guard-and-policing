@@ -6,6 +6,7 @@
 |------|---------|
 | [`MANUAL.md`](MANUAL.md) | **Full product manual** — every feature, what it does, how to use it (UI / API / SDK / CLI) |
 | [`RUNNING.md`](RUNNING.md) | **How to run it** — prerequisites, quickstart, local dev, config, database ops, testing, deployment, multi-region, troubleshooting |
+| [`DEPLOYMENT.md`](DEPLOYMENT.md) · [PDF](AgentGuard-Deployment-Guide.pdf) | **Deploying it** — end-to-end path to run the platform and its services locally and in the cloud (images, Kubernetes, config/secrets, multi-region, DR, go-live) |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | **System design** — planes, request paths, datastores, tenancy, tech stack, deployment topology, per-step build log |
 | [`ROADMAP.md`](ROADMAP.md) | The step-by-step implementation plan mapped to the PRD (all 15 steps 0–14 done) |
 | [`DATA_MODEL.md`](DATA_MODEL.md) | The 46 Postgres tables + the ClickHouse event tables |

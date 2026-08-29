@@ -2,7 +2,9 @@
 
 How to stand up, develop, test, and deploy the platform. Companion to
 [`MANUAL.md`](MANUAL.md) (what the product does) and
-[`ARCHITECTURE.md`](ARCHITECTURE.md) (how it's built).
+[`ARCHITECTURE.md`](ARCHITECTURE.md) (how it's built). For the end-to-end
+local-and-cloud deployment path — images, Kubernetes, secrets, DR, go-live —
+see [`DEPLOYMENT.md`](DEPLOYMENT.md) ([PDF](AgentGuard-Deployment-Guide.pdf)).
 
 ---
 
