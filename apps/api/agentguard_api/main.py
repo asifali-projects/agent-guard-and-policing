@@ -5,6 +5,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__, cache, db
 from .apikeys.router import router as apikeys_router
@@ -12,6 +13,7 @@ from .approvals.router import router as approvals_router
 from .audit.router import router as audit_router
 from .auth.router import router as auth_router
 from .config import get_settings
+from .dashboard.router import router as dashboard_router
 from .data_security.router import router as data_security_router
 from .inventory.router import agents_router, tools_router
 from .logging import configure_logging, get_logger
@@ -51,7 +53,16 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allow_origins,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(health.router)
+app.include_router(dashboard_router)
 app.include_router(auth_router)
 app.include_router(organizations_router)
 app.include_router(apikeys_router)

@@ -25,6 +25,7 @@ x-api-env: &api-env
   S3_SECRET_KEY: ${S3_SECRET_KEY:-agentguard-secret}
   S3_BUCKET: ${S3_BUCKET:-agentguard-artifacts}
   AGENTGUARD_SECRET_KEY: ${AGENTGUARD_SECRET_KEY:-dev-only-insecure-change-me-0000000000000000}
+  AGENTGUARD_CORS_ORIGINS: ${AGENTGUARD_CORS_ORIGINS:-http://localhost:3010,http://127.0.0.1:3010}
 
 services:
   # --- PostgreSQL: core transactional database -----------------------------

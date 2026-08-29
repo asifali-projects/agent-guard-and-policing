@@ -51,6 +51,15 @@ class Settings(BaseSettings):
     mfa_issuer: str = Field(default="AgentGuard", alias="AGENTGUARD_MFA_ISSUER")
     allow_open_registration: bool = Field(default=True, alias="AGENTGUARD_OPEN_REGISTRATION")
 
+    # Comma-separated origins allowed to call the API from a browser (the web app).
+    cors_allow_origins_raw: str = Field(
+        default="http://localhost:3010,http://127.0.0.1:3010", alias="AGENTGUARD_CORS_ORIGINS"
+    )
+
+    @property
+    def cors_allow_origins(self) -> list[str]:
+        return [o.strip() for o in self.cors_allow_origins_raw.split(",") if o.strip()]
+
     # --- OAuth (PRD §9). Each provider is enabled only when its pair is set. ---
     oauth_redirect_base_url: str = Field(
         default="http://localhost:8010", alias="AGENTGUARD_OAUTH_REDIRECT_BASE"

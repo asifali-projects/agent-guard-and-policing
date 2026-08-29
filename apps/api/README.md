@@ -31,6 +31,7 @@ agentguard_api/
 ├── cache.py        Redis client + ping()
 ├── models/         SQLAlchemy 2.0 models (PRD §44) — one module per domain
 ├── events/         ClickHouse event-store schema + bootstrap (PRD §45)
+├── dashboard/      GET /v1/dashboard/summary — "Am I safe?" (PRD §11)
 ├── security/       Password/JWT/API-key/TOTP primitives (no DB, no FastAPI)
 ├── auth/           Sessions, principals, OAuth, /v1/auth router (PRD §9, §51)
 ├── rbac/           Permission catalog + role grants + seed (PRD §50)

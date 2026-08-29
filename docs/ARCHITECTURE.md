@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 6)
+## 7. Current state (through Step 7)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -183,5 +183,18 @@ See [`DATA_MODEL.md`](DATA_MODEL.md).
 - CLI: `agentguard redteam run --fail-on <sev>` (CI gate, PRD §21) and
   `agentguard mcp scan`.
 
-Everything past Step 6 is still a `README.md` placeholder — see
-[`ROADMAP.md`](ROADMAP.md).
+**Step 7** — web dashboard ([`WEB.md`](WEB.md)):
+
+- `apps/web` built out: Next.js 14 + Tailwind + TanStack Query. Auth
+  (`lib/api.ts` refreshes tokens on 401), the PRD §8 sidebar, and pages for the
+  dashboard, agent inventory + detail (with the 7-factor posture breakdown),
+  findings + §22 actions, policies, approvals, red-team, audit, data security,
+  MCP, API keys, and team — RBAC-gated in the UI.
+- API: `GET /v1/dashboard/summary` (§11) and CORS middleware.
+
+Verified end to end in a browser: register → run red-team → remediate a finding
+(Create policy → Retest → resolved).
+
+The frontend and API are now feature-complete for the core product loop
+(discover → assess → red-team → govern → protect → monitor). Steps 8–13 add
+enterprise + intelligence layers — see [`ROADMAP.md`](ROADMAP.md).

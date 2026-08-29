@@ -1,60 +1,48 @@
-:root {
-  color-scheme: light dark;
-  --bg: #0b0e14;
-  --fg: #e6e9ef;
-  --muted: #9aa4b2;
-  --accent: #4c8dff;
-  --ok: #3fb950;
-  --bad: #f85149;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-* {
-  box-sizing: border-box;
+:root {
+  color-scheme: dark;
 }
 
 html,
 body {
-  margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--fg);
+  background: #0b0e14;
+  color: #e6e9ef;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-main {
-  max-width: 42rem;
-  margin: 0 auto;
-  padding: 4rem 1.5rem;
+* {
+  min-width: 0;
 }
 
-h1 {
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem;
-}
-
-.tag {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.card {
-  margin-top: 2rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid #232a36;
-  border-radius: 0.75rem;
-  background: #111722;
-}
-
-.status-ok {
-  color: var(--ok);
-}
-.status-bad {
-  color: var(--bad);
-}
-
-code {
-  background: #1b2330;
-  padding: 0.1rem 0.35rem;
-  border-radius: 0.35rem;
-  font-size: 0.85em;
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-panel p-4;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-lg border border-border bg-panel2 px-3 py-1.5 text-sm font-medium transition-colors hover:border-accent disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-accent bg-accent/20 text-fg hover:bg-accent/30;
+  }
+  .btn-danger {
+    @apply border-bad/60 text-bad hover:bg-bad/10;
+  }
+  .input {
+    @apply w-full rounded-lg border border-border bg-panel2 px-3 py-2 text-sm outline-none focus:border-accent;
+  }
+  .label {
+    @apply mb-1 block text-xs font-medium text-muted;
+  }
+  .th {
+    @apply px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+  .td {
+    @apply px-3 py-2 text-sm;
+  }
+  .link {
+    @apply text-accent hover:underline;
+  }
 }
