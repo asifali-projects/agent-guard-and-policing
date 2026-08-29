@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 10)
+## 7. Current state (through Step 11)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -236,5 +236,18 @@ Verified end to end in a browser: register → run red-team → remediate a find
   connection.
 - Frontend: login "Single sign-on" button, `/sso/callback`, Administration → SSO.
 
-Steps 11–13 add SCIM provisioning, the AI security analyst, and the
-TypeScript / .NET SDKs — see [`ROADMAP.md`](ROADMAP.md).
+**Step 11** — SCIM provisioning ([`SCIM.md`](SCIM.md)):
+
+- `scim/` — SCIM 2.0 `/scim/v2` Users + Groups (RFC 7643/7644), per-org bearer
+  token (`scim_configs`), `eq` filtering, PatchOp, RFC 7644 error schema via an
+  app-level `ScimError` handler.
+- `scim.service.sync_membership` is the bridge: it creates / re-roles / deletes
+  the real `memberships` row as the IdP toggles `active` and regroups the user;
+  `active:false` also revokes that org's sessions. Group display names that
+  resolve to a role drive the effective role (most privileged wins; never
+  `owner`).
+- `/v1/organizations/{id}/scim` (`org.manage`) — enable, default role, token
+  rotation; surfaced in the **SSO & SCIM** UI panel.
+
+Steps 12–13 add the AI security analyst and the TypeScript / .NET SDKs — see
+[`ROADMAP.md`](ROADMAP.md).

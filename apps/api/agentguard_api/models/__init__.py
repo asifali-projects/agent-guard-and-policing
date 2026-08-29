@@ -28,6 +28,7 @@ from .organization import (
 )
 from .policy import Policy, PolicyBinding, PolicyVersion
 from .redteam import RedTeamAssessment, RedTeamFinding, RedTeamTest
+from .scim import ScimConfig, ScimGroup, ScimGroupMember, ScimUser
 from .sso import SsoConnection
 from .tool import AgentTool, Tool, ToolVersion
 
@@ -64,6 +65,10 @@ __all__ = [
     "RedTeamFinding",
     "RedTeamTest",
     "Role",
+    "ScimConfig",
+    "ScimGroup",
+    "ScimGroupMember",
+    "ScimUser",
     "ServiceAccount",
     "Session",
     "SsoConnection",

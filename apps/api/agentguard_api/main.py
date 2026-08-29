@@ -28,6 +28,10 @@ from .redteam.router import router as redteam_router
 from .risk.router import router as risk_router
 from .routers import health
 from .runtime.router import router as runtime_router
+from .scim.admin import router as scim_admin_router
+from .scim.router import router as scim_router
+from .scim.router import scim_error_handler
+from .scim.schemas import ScimError
 from .sso.router import admin_router as sso_admin_router
 from .sso.router import public_router as sso_public_router
 
@@ -72,7 +76,11 @@ app.include_router(dashboard_router)
 app.include_router(auth_router)
 app.include_router(sso_public_router)
 app.include_router(sso_admin_router)
+app.include_router(scim_router)
+app.include_router(scim_admin_router)
 app.include_router(organizations_router)
+
+app.add_exception_handler(ScimError, scim_error_handler)
 app.include_router(apikeys_router)
 app.include_router(agents_router)
 app.include_router(tools_router)

@@ -39,9 +39,10 @@ they drift.
 | Auth (Step 2) | `auth.py` | `sessions`, `external_identities` |
 | Detection (Step 8) | `detection.py` | `behavior_profiles` (per-agent baseline) |
 | Enterprise SSO (Step 10) | `sso.py` | `sso_connections` (per-org SAML/OIDC IdP) |
+| SCIM (Step 11) | `scim.py` | `scim_configs`, `scim_users`, `scim_groups`, `scim_group_members` |
 
-40 tables. Migrations: `0001` initial · `0002` auth · `0003` tz-aware datetimes ·
-`0004` behavior_profiles · `0005` sso_connections.
+44 tables. Migrations: `0001` initial · `0002` auth · `0003` tz-aware datetimes ·
+`0004` behavior_profiles · `0005` sso_connections · `0006` scim.
 
 ### Notable relationships
 

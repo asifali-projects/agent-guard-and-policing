@@ -19,6 +19,16 @@ interface Connection {
   metadata_url: string | null;
 }
 
+interface ScimConfig {
+  enabled: boolean;
+  default_role: string;
+  token_set: boolean;
+  last_request_at: string | null;
+  scim_base_url: string;
+  users: number;
+  groups: number;
+}
+
 const ROLES = ["developer", "security_analyst", "security_admin", "auditor", "admin"];
 
 export default function SsoPage() {
@@ -49,11 +59,39 @@ export default function SsoPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sso", org] }),
   });
 
+  const scimBase = `/v1/organizations/${org}/scim`;
+  const [scimToken, setScimToken] = useState<string | null>(null);
+  const scim = useQuery({
+    queryKey: ["scim", org],
+    queryFn: () => api<ScimConfig>(scimBase),
+    enabled: !!org,
+  });
+  const scimSave = useMutation({
+    mutationFn: (body: Record<string, unknown>) => api(scimBase, { method: "PUT", body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["scim", org] }),
+  });
+  const scimRotate = useMutation({
+    mutationFn: () => api<{ token: string }>(`${scimBase}/rotate-token`, { method: "POST" }),
+    onSuccess: (r) => {
+      setScimToken(r.token);
+      qc.invalidateQueries({ queryKey: ["scim", org] });
+    },
+  });
+  const scimRevoke = useMutation({
+    mutationFn: () => api(`${scimBase}/token`, { method: "DELETE" }),
+    onSuccess: () => {
+      setScimToken(null);
+      qc.invalidateQueries({ queryKey: ["scim", org] });
+    },
+  });
+
   if (!manage) {
     return (
       <>
-        <PageHeader title="Single Sign-On" subtitle="Enterprise SSO (PRD §9, §51)" />
-        <p className="text-sm text-muted">You need the org.manage permission to configure SSO.</p>
+        <PageHeader title="SSO & SCIM" subtitle="Enterprise identity (PRD §9, §51)" />
+        <p className="text-sm text-muted">
+          You need the org.manage permission to configure SSO and SCIM.
+        </p>
       </>
     );
   }
@@ -61,8 +99,8 @@ export default function SsoPage() {
   return (
     <>
       <PageHeader
-        title="Single Sign-On"
-        subtitle="SAML 2.0 and OIDC connections with domain-based routing (PRD §9, §51)"
+        title="SSO & SCIM"
+        subtitle="SAML 2.0 / OIDC sign-in and SCIM 2.0 provisioning (PRD §9, §51)"
       />
 
       {list.isLoading ? (
@@ -235,6 +273,76 @@ export default function SsoPage() {
         The issuer&apos;s discovery document fills in the authorization, token, and JWKS endpoints
         automatically on save. For SAML, hand the SP metadata link above to your IdP administrator.
       </p>
+
+      <h2 className="mb-2 mt-8 text-sm font-semibold text-muted">
+        SCIM provisioning (PRD §51)
+      </h2>
+      {scim.isLoading ? (
+        <Spinner />
+      ) : scim.error ? (
+        <ErrorBox error={scim.error} />
+      ) : (
+        <div className="card flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+            <span>
+              Status:{" "}
+              <span className={scim.data?.enabled ? "text-good" : "text-muted"}>
+                {scim.data?.enabled ? "enabled" : "disabled"}
+              </span>
+            </span>
+            <span className="text-muted">Users: {scim.data?.users ?? 0}</span>
+            <span className="text-muted">Groups: {scim.data?.groups ?? 0}</span>
+            <span className="text-muted">
+              Last request:{" "}
+              {scim.data?.last_request_at
+                ? new Date(scim.data.last_request_at).toLocaleString()
+                : "never"}
+            </span>
+          </div>
+
+          <div>
+            <label className="label">SCIM base URL (give this to your IdP)</label>
+            <input className="input font-mono text-xs" readOnly value={scim.data?.scim_base_url ?? ""} />
+          </div>
+
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="label">Default role for provisioned users</label>
+              <select
+                className="input"
+                value={scim.data?.default_role ?? "developer"}
+                onChange={(e) =>
+                  scimSave.mutate({ enabled: scim.data?.enabled ?? true, default_role: e.target.value })
+                }
+              >
+                {ROLES.map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+            <button className="btn btn-primary" onClick={() => scimRotate.mutate()}>
+              {scim.data?.token_set ? "Rotate token" : "Enable & generate token"}
+            </button>
+            {scim.data?.token_set && (
+              <button className="btn btn-danger" onClick={() => scimRevoke.mutate()}>
+                Revoke token
+              </button>
+            )}
+          </div>
+
+          {scimToken && (
+            <div className="rounded-lg border border-accent/40 bg-accent/10 p-3 text-sm">
+              <div className="mb-1 font-semibold">Copy this bearer token now — it is shown once.</div>
+              <code className="block break-all font-mono text-xs">{scimToken}</code>
+            </div>
+          )}
+          <p className="text-xs text-muted">
+            Group names that match a role (e.g. <code>security_admin</code>,{" "}
+            <code>AgentGuard Developer</code>) set that member&apos;s role; everyone else gets the
+            default. Deactivating a user in your IdP revokes their AgentGuard access.
+          </p>
+        </div>
+      )}
     </>
   );
 }

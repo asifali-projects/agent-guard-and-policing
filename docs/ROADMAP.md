@@ -2,7 +2,7 @@
 
 The PRD ([`../agent-police-prd.docx`](../agent-police-prd.docx)) describes the
 full target product. It is deliberately **not** MVP-scoped. Execution is
-sequenced into 14 steps. Steps 0–10 are complete; 11–13 add the remaining
+sequenced into 14 steps. Steps 0–11 are complete; 12–13 add the remaining
 enterprise features on top.
 
 Legend: ☐ not started · ◐ in progress · ☑ done
@@ -20,7 +20,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 8 | Detection + Incidents + Graph | Per-agent `behavior_profiles` + anomaly detector (feeds risk, raises threats, auto-opens incidents), `/v1/incidents` lifecycle + response actions (pause agent, block tool), paused-agent runtime block, `/v1/agents/{id}/graph` + `/blast-radius`, audit CSV export, Threats/Incidents/Graph UI. See [`DETECTION.md`](DETECTION.md) | §28, §30–33 | ☑ |
 | 9 | Integrations + CI/CD + Billing | Event bus + HMAC-signed webhook / Slack / PagerDuty / SIEM delivery, `/v1/integrations` + `/v1/webhooks`, `agentguard deploy` CI gate + composite GitHub Action, Redis usage metering + `/v1/billing` (plans, subscription, usage), Integrations + Billing UI. See [`INTEGRATIONS.md`](INTEGRATIONS.md) | §43, §60–65 | ☑ |
 | 10 | Enterprise SSO | Generic OIDC (discovery + JWKS `id_token` verification) and SAML 2.0 (signed-assertion verification via `signxml`, no libxmlsec), `sso_connections` model + migration, domain-based discovery `/v1/auth/sso/discover`, IdP redirect + OIDC callback + SAML ACS, JIT user provisioning, enforced-SSO password block, `/v1/organizations/{id}/sso` CRUD + SP metadata, login + callback + settings UI. See [`SSO.md`](SSO.md) | §9, §51 | ☑ |
-| 11 | SCIM provisioning | Automated user lifecycle from customer IdP | §51 | ☐ |
+| 11 | SCIM provisioning | SCIM 2.0 `/scim/v2` (Users + Groups, RFC 7643/7644), per-org bearer token, `eq` filtering, PatchOp, JIT provisioning into `memberships`, `active:false` deprovision (+ session revoke), group-name→role mapping (most-privileged wins), `/v1/organizations/{id}/scim` admin + token rotation, SSO & SCIM UI panel. See [`SCIM.md`](SCIM.md) | §51 | ☑ |
 | 12 | AI Security Analyst | `services/ai-analyst` — read-only natural-language Q&A | §35 | ☐ |
 | 13 | TypeScript + .NET SDKs | `@agentguard/sdk`, `AgentGuard.NET` | §37, §39–40 | ☐ |
 

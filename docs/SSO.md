@@ -101,6 +101,6 @@ button on the login screen.
 
 ## Deferred
 
-SCIM provisioning (Step 11), SP-signed AuthnRequests, SAML Single Logout,
-encrypted `config` at rest, IdP-initiated login replay protection
-(`InResponseTo` / one-time assertion IDs).
+SP-signed AuthnRequests, SAML Single Logout, encrypted `config` at rest,
+IdP-initiated login replay protection (`InResponseTo` / one-time assertion IDs).
+SCIM provisioning is [`SCIM.md`](SCIM.md).

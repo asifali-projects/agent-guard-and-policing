@@ -116,6 +116,6 @@ DELETE /v1/organizations/{id}/api-keys/{key_id}
 
 ## Deferred to later steps
 
-Real invitation emails (Step 9 notifications), SAML/OIDC enterprise SSO (Step 10),
-SCIM provisioning (Step 11), MFA recovery codes, per-key rotation endpoint,
-encrypted MFA secret storage.
+Real invitation emails (Step 9 notifications). Enterprise SSO is
+[`SSO.md`](SSO.md); SCIM provisioning is [`SCIM.md`](SCIM.md). Still open: MFA
+recovery codes, per-key rotation endpoint, encrypted MFA secret storage.
