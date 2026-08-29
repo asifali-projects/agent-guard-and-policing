@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin, UUIDMixin, enum_column, org_column
-from .enums import ApiKeyType, Environment, MembershipRole
+from .enums import ApiKeyType, Environment, MembershipRole, Region
 
 
 class Organization(UUIDMixin, TimestampMixin, Base):
@@ -19,7 +19,8 @@ class Organization(UUIDMixin, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(80), nullable=False, unique=True)
-    region: Mapped[str] = mapped_column(String(20), nullable=False, default="us")
+    # Home region — set at creation, never changed (PRD §76).
+    region: Mapped[Region] = enum_column(Region, nullable=False, default=Region.us)
     settings: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
     memberships: Mapped[list[Membership]] = relationship(

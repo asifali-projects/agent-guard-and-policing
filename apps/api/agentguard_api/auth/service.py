@@ -53,13 +53,19 @@ async def unique_slug(session: AsyncSession, name: str) -> str:
 async def register(
     session: AsyncSession, *, email: str, password: str, full_name: str | None, org_name: str
 ) -> tuple[User, Organization, Membership]:
+    from ..regions import current_region
+
     email = email.strip().lower()
     exists = await session.scalar(select(User.id).where(func.lower(User.email) == email))
     if exists:
         raise AuthError("email already registered")
 
     user = User(email=email, full_name=full_name, hashed_password=hash_password(password))
-    org = Organization(name=org_name.strip(), slug=await unique_slug(session, org_name))
+    org = Organization(
+        name=org_name.strip(),
+        slug=await unique_slug(session, org_name),
+        region=current_region(),
+    )
     session.add_all([user, org])
     await session.flush()
 

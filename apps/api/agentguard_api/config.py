@@ -27,6 +27,43 @@ class Settings(BaseSettings):
         alias="AGENTGUARD_SECRET_KEY",
     )
 
+    # --- multi-region / data residency (PRD §76) ---
+    # Which region THIS deployment serves. Each region is a full, isolated stack
+    # (control plane + data plane + event store); an organization's data never
+    # leaves its home region.
+    region: Literal["us", "eu", "me", "apac"] = Field(default="us", alias="AGENTGUARD_REGION")
+    # Discovery map so clients can route to the right region. Format:
+    #   "us|United States|https://us.api.host|https://us.app.host, eu|European Union|..."
+    regions_raw: str = Field(
+        default="us|United States|http://localhost:8010|http://localhost:3010",
+        alias="AGENTGUARD_REGIONS",
+    )
+
+    @property
+    def region_catalog(self) -> list[dict[str, str]]:
+        out: list[dict[str, str]] = []
+        for entry in self.regions_raw.split(","):
+            parts = [p.strip() for p in entry.split("|")]
+            if len(parts) >= 3 and parts[0]:
+                out.append(
+                    {
+                        "code": parts[0],
+                        "name": parts[1] or parts[0].upper(),
+                        "api_url": parts[2].rstrip("/"),
+                        "web_url": (parts[3].rstrip("/") if len(parts) > 3 else ""),
+                    }
+                )
+        if not any(r["code"] == self.region for r in out):
+            out.append(
+                {
+                    "code": self.region,
+                    "name": self.region.upper(),
+                    "api_url": self.oauth_redirect_base_url.rstrip("/"),
+                    "web_url": self.web_base_url.rstrip("/"),
+                }
+            )
+        return out
+
     # --- datastores ---
     database_url: str = Field(
         default="postgresql+asyncpg://agentguard:agentguard@localhost:5442/agentguard",

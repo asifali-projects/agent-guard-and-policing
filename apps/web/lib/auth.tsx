@@ -9,7 +9,12 @@ interface AuthCtx {
   me: Me | null;
   ready: boolean;
   login: (email: string, password: string, organizationId?: string) => Promise<void>;
-  register: (email: string, password: string, organizationName: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    organizationName: string,
+    region?: string,
+  ) => Promise<void>;
   logout: () => void;
   can: (perm: string) => boolean;
   refreshMe: () => Promise<void>;
@@ -62,11 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const register = useCallback(
-    async (email: string, password: string, organizationName: string) => {
+    async (email: string, password: string, organizationName: string, region?: string) => {
       const res = await api<TokenResponse>("/v1/auth/register", {
         method: "POST",
         auth: false,
-        body: { email, password, organization_name: organizationName },
+        body: { email, password, organization_name: organizationName, region },
       });
       store(res);
       await refreshMe();

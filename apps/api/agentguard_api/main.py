@@ -26,6 +26,7 @@ from .mcp.router import router as mcp_router
 from .organizations.router import router as organizations_router
 from .policies.router import router as policies_router
 from .redteam.router import router as redteam_router
+from .regions import router as regions_router
 from .risk.router import router as risk_router
 from .routers import health
 from .runtime.router import router as runtime_router
@@ -73,6 +74,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(regions_router)
 app.include_router(dashboard_router)
 app.include_router(auth_router)
 app.include_router(sso_public_router)

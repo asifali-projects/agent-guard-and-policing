@@ -277,4 +277,19 @@ Verified end to end in a browser: register → run red-team → remediate a find
   `redteam run`, `mcp scan`, `deploy`). New CI jobs `sdk-typescript` and
   `sdk-dotnet`.
 
-All 14 steps (0–13) are complete.
+**Step 14** — multi-region data residency ([`MULTI_REGION.md`](MULTI_REGION.md),
+[ADR 0002](adr/0002-multi-region-data-residency.md)):
+
+- **One deployment = one region** (`AGENTGUARD_REGION` ∈ `us`/`eu`/`me`/`apac`).
+  No cross-region database or global router — each region is a complete isolated
+  stack.
+- `Organization.region` is a `Region` enum, set at creation and immutable
+  (migration `89d72fc74981`).
+- `regions.assert_servable()` → `421 Misdirected Request` (with the correct
+  regional URL in `X-AgentGuard-Region*` headers) for any org not homed here —
+  enforced in `get_principal` and at `register` / org creation.
+- Public `GET /v1/regions` discovery; `/v1/auth/me` exposes `region` +
+  `active_region`; dashboard has a sign-up region picker, a region badge, and
+  turns a 421 into a "continue in the right region" link.
+
+All steps (0–14) are complete.

@@ -1,6 +1,8 @@
 export type Severity = "info" | "low" | "medium" | "high" | "critical";
 export type DecisionStr = "ALLOW" | "DENY" | "APPROVAL" | "REDACT" | "RATE_LIMIT";
 
+export type RegionCode = "us" | "eu" | "me" | "apac";
+
 export interface Me {
   id: string;
   email: string;
@@ -8,8 +10,27 @@ export interface Me {
   mfa_enabled: boolean;
   is_superuser: boolean;
   active_organization_id: string | null;
+  active_region: RegionCode | null;
+  region: RegionCode;
   permissions: string[];
-  memberships: { organization_id: string; organization_name: string; role: string }[];
+  memberships: {
+    organization_id: string;
+    organization_name: string;
+    role: string;
+    region: RegionCode | null;
+  }[];
+}
+
+export interface RegionInfo {
+  code: RegionCode;
+  name: string;
+  api_url: string;
+  web_url: string | null;
+  current: boolean;
+}
+export interface RegionsResponse {
+  current: RegionCode;
+  regions: RegionInfo[];
 }
 
 export interface DashboardSummary {

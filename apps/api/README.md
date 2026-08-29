@@ -57,6 +57,7 @@ agentguard_api/
 ├── runtime/        core.py (side-effect-free) + POST /v1/runtime/evaluate (PRD §24–27, §42)
 ├── audit/          /v1/audit/events + /v1/audit/verify (PRD §33)
 ├── audit_log.py    Append-only hash-chained audit writer (PRD §33)
+├── regions.py      Data-residency guard + public GET /v1/regions (PRD §76)
 └── routers/
     └── health.py   /healthz, /readyz
 migrations/         Alembic (async) — versions/
@@ -87,3 +88,4 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 | 10 | Enterprise SSO — OIDC + SAML 2.0, domain discovery, JIT provisioning, enforced-SSO password block |
 | 11 | SCIM 2.0 provisioning — /scim/v2 Users + Groups, per-org token, group→role sync, deprovision |
 | 12 | AI Security Analyst — read-only tool library, Claude tool-use loop + deterministic fallback, /v1/analyst |
+| 14 | Multi-region — `Region` enum, immutable `Organization.region`, `421` residency guard, `GET /v1/regions` |

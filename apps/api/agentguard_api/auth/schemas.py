@@ -7,7 +7,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
-from ..models.enums import MembershipRole
+from ..models.enums import MembershipRole, Region
 
 
 class RegisterRequest(BaseModel):
@@ -15,6 +15,9 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=12, max_length=256)
     full_name: str | None = Field(default=None, max_length=200)
     organization_name: str = Field(min_length=2, max_length=200)
+    # Data-residency region for the new org. Must match this endpoint's region
+    # (PRD §76) — pick the region by signing up at its regional URL.
+    region: Region | None = None
 
 
 class LoginRequest(BaseModel):
@@ -63,6 +66,7 @@ class MembershipOut(BaseModel):
     organization_id: uuid.UUID
     organization_name: str
     role: MembershipRole
+    region: Region | None = None
 
 
 class MeResponse(BaseModel):
@@ -72,6 +76,8 @@ class MeResponse(BaseModel):
     mfa_enabled: bool
     is_superuser: bool
     active_organization_id: uuid.UUID | None
+    active_region: Region | None = None
+    region: Region  # the region this deployment serves
     permissions: list[str]
     memberships: list[MembershipOut]
 

@@ -27,6 +27,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="text-muted">
             {org?.organization_name ?? "—"}
             {org && <span className="ml-2 rounded bg-panel px-1.5 py-0.5 text-xs">{org.role}</span>}
+            {me.active_region && (
+              <span
+                className="ml-2 rounded bg-panel px-1.5 py-0.5 text-xs uppercase"
+                title="Data-residency region (fixed at creation)"
+              >
+                {me.active_region}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-muted">{me.email}</span>

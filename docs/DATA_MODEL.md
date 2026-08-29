@@ -44,7 +44,11 @@ they drift.
 
 46 tables. Migrations: `0001` initial · `0002` auth · `0003` tz-aware datetimes ·
 `0004` behavior_profiles · `0005` sso_connections · `0006` scim ·
-`0007` analyst_conversations.
+`0007` analyst_conversations · `0008` org region enum.
+
+`organizations.region` is a `Region` enum (`us`/`eu`/`me`/`apac`), set at
+creation and immutable — the org's data-residency home (PRD §76, see
+[`MULTI_REGION.md`](MULTI_REGION.md)). Each region is a separate database.
 
 ### Notable relationships
 

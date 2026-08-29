@@ -21,6 +21,7 @@ from ..db import get_session
 from ..models import ApiKey, Membership, Organization, Session, User
 from ..models.enums import ActorType
 from ..rbac import permissions_for_role
+from ..regions import assert_servable
 from ..security import decode_access_token
 from ..security.api_keys import parse_api_key, verify_secret
 from ..security.tokens import TokenError
@@ -140,14 +141,23 @@ async def get_principal(
     raw_key = x_api_key or (token if token and token.startswith("ag_") else None)
 
     if raw_key:
-        return await _principal_from_api_key(raw_key, db, request)
-    if token:
-        return await _principal_from_jwt(token, db, request)
-    raise HTTPException(
-        status.HTTP_401_UNAUTHORIZED,
-        "missing credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+        principal = await _principal_from_api_key(raw_key, db, request)
+    elif token:
+        principal = await _principal_from_jwt(token, db, request)
+    else:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            "missing credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Data residency: this deployment only serves its own region (PRD §76).
+    if principal.organization_id is not None:
+        org = await db.get(Organization, principal.organization_id)
+        if org is not None:
+            assert_servable(org.region)
+
+    return principal
 
 
 CurrentPrincipal = Annotated[Principal, Depends(get_principal)]

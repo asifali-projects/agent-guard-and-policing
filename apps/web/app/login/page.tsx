@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import type { RegionsResponse } from "@/lib/types";
 
 interface Discovery {
   sso: boolean;
@@ -21,9 +22,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [org, setOrg] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
   const [busy, setBusy] = useState(false);
   const [ssoBusy, setSsoBusy] = useState(false);
+  const [regions, setRegions] = useState<RegionsResponse | null>(null);
+  const [regionChoice, setRegionChoice] = useState<string>("");
 
   useEffect(() => {
     if (ready && me) router.replace("/");
@@ -32,7 +35,27 @@ export default function LoginPage() {
   useEffect(() => {
     const p = new URLSearchParams(window.location.search).get("sso_error");
     if (p) setSsoError(p);
+    api<RegionsResponse>("/v1/regions", { auth: false })
+      .then((r) => {
+        setRegions(r);
+        setRegionChoice(r.current);
+      })
+      .catch(() => {});
   }, []);
+
+  function wrongRegionMessage(err: ApiError): React.ReactNode {
+    if (err.regionUrl) {
+      return (
+        <>
+          Your account&apos;s data is in the <b>{err.region}</b> region.{" "}
+          <a className="underline" href={`${err.regionUrl.replace(/\/[^/]*$/, "")}`}>
+            Continue there →
+          </a>
+        </>
+      );
+    }
+    return err.message;
+  }
 
   async function startSso() {
     setError(null);
@@ -61,14 +84,25 @@ export default function LoginPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
     setError(null);
+
+    // Registering into a different region: send the browser to that region's app.
+    if (mode === "register" && regions && regionChoice && regionChoice !== regions.current) {
+      const target = regions.regions.find((r) => r.code === regionChoice);
+      if (target?.web_url) {
+        window.location.href = `${target.web_url}/login`;
+        return;
+      }
+    }
+
+    setBusy(true);
     try {
       if (mode === "login") await login(email, password);
-      else await register(email, password, org);
+      else await register(email, password, org, regions?.current);
       router.replace("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "failed");
+      if (err instanceof ApiError && err.status === 421) setError(wrongRegionMessage(err));
+      else setError(err instanceof Error ? err.message : "failed");
     } finally {
       setBusy(false);
     }
@@ -114,19 +148,38 @@ export default function LoginPage() {
             />
           </div>
           {mode === "register" && (
-            <div>
-              <label className="label">Organization name</label>
-              <input
-                className="input"
-                required
-                value={org}
-                onChange={(e) => setOrg(e.target.value)}
-              />
-            </div>
+            <>
+              <div>
+                <label className="label">Organization name</label>
+                <input
+                  className="input"
+                  required
+                  value={org}
+                  onChange={(e) => setOrg(e.target.value)}
+                />
+              </div>
+              {regions && regions.regions.length > 1 && (
+                <div>
+                  <label className="label">Data residency region</label>
+                  <select
+                    className="input"
+                    value={regionChoice}
+                    onChange={(e) => setRegionChoice(e.target.value)}
+                  >
+                    {regions.regions.map((r) => (
+                      <option key={r.code} value={r.code}>
+                        {r.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-muted">
+                    Your data stays in this region — it can&apos;t be changed later.
+                  </p>
+                </div>
+              )}
+            </>
           )}
-          {(error || ssoError) && (
-            <div className="text-sm text-bad">{error ?? ssoError}</div>
-          )}
+          {(error || ssoError) && <div className="text-sm text-bad">{error ?? ssoError}</div>}
           <button className="btn btn-primary justify-center" disabled={busy}>
             {busy ? "…" : mode === "login" ? "Sign in" : "Create account"}
           </button>
@@ -142,6 +195,7 @@ export default function LoginPage() {
           </button>
         )}
         <p className="mt-3 text-center text-xs text-muted">
+          {regions ? `Region: ${regions.current.toUpperCase()} · ` : ""}
           MFA-enabled accounts must use the <code>agentguard</code> CLI to sign in.
         </p>
       </div>

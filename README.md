@@ -113,25 +113,29 @@ make infra-down         # stop backing services (add `make infra-clean` to wipe 
 
 ## Status
 
-**All 14 implementation steps (0–13) are complete.** See
+**All implementation steps (0–14) are complete.** See
 [`docs/ROADMAP.md`](docs/ROADMAP.md) for the per-step breakdown.
 
 - **Control plane + runtime** (`apps/api`) — auth/tenancy/RBAC, the deterministic
   policy engine + `POST /v1/runtime/evaluate`, the 7-factor risk engine + DLP,
   red-team engine, behavioral detection, incidents, agent graph, integrations +
-  webhooks, billing/metering, enterprise SSO (SAML/OIDC), SCIM 2.0, and the AI
-  Security Analyst.
+  webhooks, billing/metering, enterprise SSO (SAML/OIDC), SCIM 2.0, the AI
+  Security Analyst, and multi-region data residency.
 - **Dashboard** (`apps/web`) — Next.js 14, the full PRD §8 information
   architecture.
 - **SDKs + CLI** — Python (`agentguard`), TypeScript (`@agentguard/sdk`), and
   .NET (`AgentGuard.NET`), all behaviourally identical.
-- **Docs** — one design doc per subsystem under [`docs/`](docs), plus ADRs.
+- **Docs** — [`MANUAL.md`](docs/MANUAL.md) (full product manual),
+  [`RUNNING.md`](docs/RUNNING.md) (setup & operations),
+  [`ARCHITECTURE.md`](docs/ARCHITECTURE.md), plus one design doc per subsystem
+  and ADRs, all under [`docs/`](docs).
 
 Per-subsystem docs: [`AUTH`](docs/AUTH.md) · [`POLICY`](docs/POLICY.md) ·
 [`RISK_DLP`](docs/RISK_DLP.md) · [`SDK`](docs/SDK.md) · [`REDTEAM`](docs/REDTEAM.md) ·
 [`WEB`](docs/WEB.md) · [`DETECTION`](docs/DETECTION.md) ·
 [`INTEGRATIONS`](docs/INTEGRATIONS.md) · [`SSO`](docs/SSO.md) ·
-[`SCIM`](docs/SCIM.md) · [`ANALYST`](docs/ANALYST.md).
+[`SCIM`](docs/SCIM.md) · [`ANALYST`](docs/ANALYST.md) ·
+[`MULTI_REGION`](docs/MULTI_REGION.md).
 
 ---
 

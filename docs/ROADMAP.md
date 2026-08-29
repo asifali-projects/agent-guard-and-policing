@@ -2,7 +2,7 @@
 
 The PRD ([`../agent-police-prd.docx`](../agent-police-prd.docx)) describes the
 full target product. It is deliberately **not** MVP-scoped. Execution is
-sequenced into 14 steps. **All 14 steps (0–13) are complete.**
+sequenced into steps. **All steps (0–14) are complete.**
 
 Legend: ☐ not started · ◐ in progress · ☑ done
 
@@ -22,6 +22,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 11 | SCIM provisioning | SCIM 2.0 `/scim/v2` (Users + Groups, RFC 7643/7644), per-org bearer token, `eq` filtering, PatchOp, JIT provisioning into `memberships`, `active:false` deprovision (+ session revoke), group-name→role mapping (most-privileged wins), `/v1/organizations/{id}/scim` admin + token rotation, SSO & SCIM UI panel. See [`SCIM.md`](SCIM.md) | §51 | ☑ |
 | 12 | AI Security Analyst | `agentguard_api/analyst/` — read-only NL Q&A: 9-tool org-scoped read library, Claude tool-use loop with a deterministic fallback router, `/v1/analyst` (ask + conversations, `analyst.query` perm), per-org hourly quota, audited queries, `analyst/asgi.py` standalone service + `ai-analyst` compose service, chat UI. See [`ANALYST.md`](ANALYST.md) | §35 | ☑ |
 | 13 | TypeScript + .NET SDKs | `@agentguard/sdk` (`packages/sdk-typescript`, zero-dep, `node:test`) and `AgentGuard.NET` (`packages/sdk-dotnet`, net8.0, xunit) — both mirror the Python SDK: identity, 5 decisions, redaction, fail-safe, `agentguard` CLI; .NET adds `AddAgentGuard(...)` DI. CI jobs for both. See [`SDK.md`](SDK.md) | §37, §39–40 | ☑ |
+| 14 | Multi-region data residency | `Region` enum (`us`/`eu`/`me`/`apac`), `Organization.region` immutable at creation (migration `89d72fc74981`), `regions.assert_servable` → `421` residency guard in `get_principal` + at org creation, public `GET /v1/regions` discovery, `/v1/auth/me` region fields, `AGENTGUARD_REGION` + `AGENTGUARD_REGIONS` config, dashboard region picker + badge + 421 redirect. One deployment = one fully isolated region. See [`MULTI_REGION.md`](MULTI_REGION.md), [ADR 0002](adr/0002-multi-region-data-residency.md) | §76 | ☑ |
 
 ## Mapping to PRD engineering phases (§87)
 
@@ -29,7 +30,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 - **Phase B — Security Core:** Steps 3–4 (runtime guard, risk, DLP, approval, audit)
 - **Phase C — Offensive Security:** Step 6
 - **Phase D — Platform:** Steps 7–9 (dashboard, graph, analytics, incidents, integrations)
-- **Phase E — Enterprise:** Steps 10–11
+- **Phase E — Enterprise:** Steps 10–11, 14 (SSO, SCIM, multi-region residency)
 - **Phase F — Intelligence:** Steps 8, 12 (behavioral detection, AI analyst)
 - **Phase G — Ecosystem:** Steps 5, 13 (Python / TypeScript / .NET SDKs + CLI)
 

@@ -12,7 +12,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
-from .. import audit_log
+from .. import audit_log, regions
 from ..config import get_settings
 from ..models import ExternalIdentity, Organization, Session, User
 from ..models.enums import ActorType
@@ -76,6 +76,8 @@ def _read_mfa_token(token: str) -> tuple[uuid.UUID, uuid.UUID | None]:
 async def register(body: RegisterRequest, request: Request, db: DbSession) -> TokenResponse:
     if not get_settings().allow_open_registration:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "open registration is disabled")
+    if body.region is not None:
+        regions.assert_servable(body.region)  # 421 → sign up at the right regional URL
     try:
         user, org, _ = await service.register(
             db,
@@ -159,6 +161,7 @@ async def logout(body: LogoutRequest, principal: CurrentPrincipal, db: DbSession
 async def me(principal: CurrentPrincipal, user: CurrentUser, db: DbSession) -> MeResponse:
     members = await service.memberships_for(db, user)
     out: list[MembershipOut] = []
+    active_region = None
     for m in members:
         org = await db.get(Organization, m.organization_id)
         out.append(
@@ -166,8 +169,11 @@ async def me(principal: CurrentPrincipal, user: CurrentUser, db: DbSession) -> M
                 organization_id=m.organization_id,
                 organization_name=org.name if org else "",
                 role=m.role,
+                region=org.region if org else None,
             )
         )
+        if org is not None and m.organization_id == principal.organization_id:
+            active_region = org.region
     return MeResponse(
         id=user.id,
         email=user.email,
@@ -175,6 +181,8 @@ async def me(principal: CurrentPrincipal, user: CurrentUser, db: DbSession) -> M
         mfa_enabled=user.mfa_enabled,
         is_superuser=user.is_superuser,
         active_organization_id=principal.organization_id,
+        active_region=active_region,
+        region=regions.current_region(),
         permissions=sorted(principal.permissions),
         memberships=out,
     )

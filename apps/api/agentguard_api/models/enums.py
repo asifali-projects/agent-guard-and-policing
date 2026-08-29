@@ -15,6 +15,15 @@ class Environment(StrEnum):
     production = "production"
 
 
+class Region(StrEnum):
+    """Data-residency region — PRD §76. Each is a fully isolated stack."""
+
+    us = "us"  # United States
+    eu = "eu"  # European Union
+    me = "me"  # Middle East
+    apac = "apac"  # Asia-Pacific
+
+
 class MembershipRole(StrEnum):
     """PRD §50."""
 

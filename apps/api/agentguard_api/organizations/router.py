@@ -20,7 +20,8 @@ from ..auth.dependencies import (
     require_permission,
 )
 from ..models import Membership, Organization, User
-from ..models.enums import ActorType, MembershipRole
+from ..models.enums import ActorType, MembershipRole, Region
+from ..regions import assert_servable, current_region
 
 router = APIRouter(prefix="/v1/organizations", tags=["organizations"])
 
@@ -29,18 +30,19 @@ class OrgOut(BaseModel):
     id: uuid.UUID
     name: str
     slug: str
-    region: str
+    region: Region
     role: MembershipRole | None = None
 
 
 class OrgCreate(BaseModel):
     name: str = Field(min_length=2, max_length=200)
-    region: str = Field(default="us", max_length=20)
+    # Optional; must match this deployment's region (PRD §76). Region is fixed
+    # for the life of the organization.
+    region: Region | None = None
 
 
 class OrgUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=200)
-    region: str | None = Field(default=None, max_length=20)
 
 
 class MemberOut(BaseModel):
@@ -75,10 +77,12 @@ async def my_organizations(user: CurrentUser, db: DbSession) -> list[OrgOut]:
 
 @router.post("", response_model=OrgOut, status_code=status.HTTP_201_CREATED)
 async def create_organization(body: OrgCreate, user: CurrentUser, db: DbSession) -> OrgOut:
+    if body.region is not None:
+        assert_servable(body.region)  # 421 → create it in the right region
     org = Organization(
         name=body.name.strip(),
         slug=await auth_service.unique_slug(db, body.name),
-        region=body.region,
+        region=current_region(),
     )
     db.add(org)
     await db.flush()
@@ -126,8 +130,7 @@ async def update_organization(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "organization not found")
     if body.name is not None:
         org.name = body.name.strip()
-    if body.region is not None:
-        org.region = body.region
+    # region is immutable — data residency is fixed at creation (PRD §76)
     await audit_log.record(
         db,
         organization_id=org.id,

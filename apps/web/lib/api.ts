@@ -32,6 +32,9 @@ export const tokens = {
 
 export class ApiError extends Error {
   status: number;
+  /** For a 421 (wrong data-residency region): where to go instead. */
+  regionUrl?: string;
+  region?: string;
   constructor(status: number, message: string) {
     super(message);
     this.status = status;
@@ -90,7 +93,12 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
     } catch {
       /* keep statusText */
     }
-    throw new ApiError(res.status, detail);
+    const err = new ApiError(res.status, detail);
+    if (res.status === 421) {
+      err.region = res.headers.get("X-AgentGuard-Region") ?? undefined;
+      err.regionUrl = res.headers.get("X-AgentGuard-Region-Url") ?? undefined;
+    }
+    throw err;
   }
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
