@@ -6,6 +6,22 @@ on:
   pull_request:
 
 jobs:
+  policy-engine:
+    name: policy-engine — lint + test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/policy-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q
+
   api:
     name: api — lint + test
     runs-on: ubuntu-latest
@@ -24,14 +40,23 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U agentguard"
           --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6389:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
     env:
       DATABASE_URL: postgresql+asyncpg://agentguard:agentguard@localhost:5442/agentguard
+      REDIS_URL: redis://localhost:6389/0
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: python -m pip install --upgrade pip
+      - run: pip install -e ../../packages/policy-engine
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: ruff format --check .

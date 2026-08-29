@@ -8,11 +8,15 @@ from fastapi import FastAPI
 
 from . import __version__, cache, db
 from .apikeys.router import router as apikeys_router
+from .approvals.router import router as approvals_router
 from .auth.router import router as auth_router
 from .config import get_settings
+from .inventory.router import agents_router, tools_router
 from .logging import configure_logging, get_logger
 from .organizations.router import router as organizations_router
+from .policies.router import router as policies_router
 from .routers import health
+from .runtime.router import router as runtime_router
 
 settings = get_settings()
 configure_logging(settings.log_level)
@@ -46,6 +50,11 @@ app.include_router(health.router)
 app.include_router(auth_router)
 app.include_router(organizations_router)
 app.include_router(apikeys_router)
+app.include_router(agents_router)
+app.include_router(tools_router)
+app.include_router(policies_router)
+app.include_router(approvals_router)
+app.include_router(runtime_router)
 
 
 @app.get("/", tags=["meta"], summary="Service banner")

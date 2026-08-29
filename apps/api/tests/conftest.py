@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import subprocess
 import sys
@@ -9,7 +10,10 @@ from urllib.parse import urlsplit, urlunsplit
 
 os.environ.setdefault("AGENTGUARD_ENV", "test")
 
-import asyncio
+# asyncpg + the Windows Proactor loop don't tear down cleanly between the
+# per-test loops pytest-asyncio creates; the selector loop does.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 import pytest
 import pytest_asyncio
@@ -24,11 +28,18 @@ asyncpg = pytest.importorskip("asyncpg")
 @pytest.fixture
 async def client():
     """App client with NO database — for health/meta tests only."""
+    from agentguard_api import cache as cache_module
+    from agentguard_api import db as db_module
     from agentguard_api.main import app
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
+
+    # A probe endpoint may have built the module-global engine / redis client on
+    # this loop; drop them so the next test rebuilds on its own loop.
+    await db_module.dispose()
+    await cache_module.close()
 
 
 # --- database-backed client -------------------------------------------------
@@ -91,9 +102,14 @@ async def api(_database_url: str):
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from sqlalchemy.pool import NullPool
 
+    from agentguard_api import cache as cache_module
     from agentguard_api import db as db_module
     from agentguard_api.db import get_session
     from agentguard_api.main import app
+
+    # Each test runs on its own event loop; the module-global Redis client must
+    # be rebuilt so it binds to the current loop.
+    await cache_module.close()
 
     engine = create_async_engine(_database_url, poolclass=NullPool)
     maker = async_sessionmaker(engine, expire_on_commit=False)
@@ -119,5 +135,6 @@ async def api(_database_url: str):
 
     app.dependency_overrides.clear()
     await engine.dispose()
+    await cache_module.close()
     db_module._engine = None
     db_module._sessionmaker = None

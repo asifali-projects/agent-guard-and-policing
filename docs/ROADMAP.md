@@ -12,7 +12,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 0 | Repo + infra scaffold | Monorepo layout, `docker-compose` (Postgres, Redis, Redpanda, ClickHouse, Qdrant, MinIO), FastAPI skeleton with health probes, Next.js skeleton, CI, docs | §53–56 | ☑ |
 | 1 | Data model + migrations | 36 SQLAlchemy models + Alembic initial migration for all Postgres tables; 5 ClickHouse event tables + bootstrap. See [`DATA_MODEL.md`](DATA_MODEL.md) | §44–45 | ☑ |
 | 2 | Auth + tenancy + RBAC | Email + OAuth login, JWT sessions (rotation/reuse-detection/device tracking), TOTP MFA, 7-role RBAC + 31-permission catalog, tenant-scoping deps, API-key system (§52), audit hash-chain. See [`AUTH.md`](AUTH.md) | §9, §49–52 | ☑ |
-| 3 | Policy Engine + Runtime API | `packages/policy-engine`, `POST /v1/runtime/evaluate`, policy hierarchy, decision engine, Redis cache | §23–25, §42 | ☐ |
+| 3 | Policy Engine + Runtime API | `packages/policy-engine` (pure, 21 tests), `POST /v1/runtime/evaluate`, hierarchy + precedence + conditions, Redis policy cache, rate limiting, approval binding, policy/approval/inventory routers. See [`POLICY.md`](POLICY.md) | §23–25, §29, §42, §46 | ☑ |
 | 4 | Risk Engine + DLP | `services/risk-engine` (7 factors), data classifiers (PII/secrets/keys), redact/block | §26–27 | ☐ |
 | 5 | Python SDK + CLI | `pip install agentguard`, `guard.protect()`, `@guard.tool`, `agentguard` CLI | §36–38, §71 | ☐ |
 | 6 | Red-Team Engine | `services/red-team` pipeline, attack categories, assessment API, CI-triggered re-tests | §18–22 | ☐ |

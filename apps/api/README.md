@@ -36,11 +36,19 @@ agentguard_api/
 ├── rbac/           Permission catalog + role grants + seed (PRD §50)
 ├── organizations/  /v1/organizations + members router
 ├── apikeys/        /v1/organizations/{id}/api-keys router (PRD §52)
+├── inventory/      /v1/agents + /v1/tools (minimal; rich views in Step 7)
+├── policies/       /v1/policies CRUD + bindings + validate + simulate (PRD §23)
+├── approvals/      /v1/approvals — list / approve / reject (PRD §29)
+├── runtime/        POST /v1/runtime/evaluate — the critical path (PRD §24–25, §42)
 ├── audit_log.py    Append-only hash-chained audit writer (PRD §33)
 └── routers/
     └── health.py   /healthz, /readyz
 migrations/         Alembic (async) — versions/
 ```
+
+The deterministic policy engine lives in the monorepo package
+[`packages/policy-engine`](../../packages/policy-engine) and is installed
+editable (`tasks.ps1 api-install`).
 
 ## Database
 
@@ -59,7 +67,6 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 
 | Step | Adds |
 |------|------|
-| 3 | `POST /v1/runtime/evaluate`, policy hierarchy, decision engine |
-| 4 | Risk engine + DLP hooks |
+| 4 | Risk engine + DLP detectors (replace the placeholder risk score) |
 | 6 | Red-team assessment + findings endpoints |
 | 9 | Integrations, webhooks, billing/usage endpoints |

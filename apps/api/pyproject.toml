@@ -51,7 +51,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S105", "S106", "S107", "S603", "S607"]
+"tests/**" = ["S105", "S106", "S107", "S603", "S607", "RUF059"]
 "agentguard_api/models/enums.py" = ["S105"]  # enum member values, not secrets
 "agentguard_api/auth/oauth.py" = ["S105", "S106"]  # provider endpoint URLs contain "token"
 

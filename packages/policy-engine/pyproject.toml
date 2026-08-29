@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentguard-policy-engine"
+version = "0.0.0"
+description = "Deterministic policy evaluation for AgentGuard (PRD §23–25)"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.9"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.7"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["agentguard_policy"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "RUF"]
+ignore = ["RUF002", "RUF003"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

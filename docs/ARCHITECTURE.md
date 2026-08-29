@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 2)
+## 7. Current state (through Step 3)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -128,5 +128,17 @@ See [`DATA_MODEL.md`](DATA_MODEL.md).
 - Audit log writer with per-org hash chain + `verify_chain()`.
 - 24 endpoints under `/v1/auth`, `/v1/organizations`, `.../api-keys`.
 
-Everything past Step 2 is still a `README.md` placeholder — see
+**Step 3** — policy engine + runtime guard ([`POLICY.md`](POLICY.md)):
+
+- `packages/policy-engine` — pure, deterministic `evaluate(input, policies)`;
+  policy spec, condition trees, precedence (deny > approval > rate_limit >
+  redact > allow), scope hierarchy. No I/O, no LLM. 21 tests.
+- `POST /v1/runtime/evaluate` (§42) — the critical path. Redis-cached policy set
+  per org (versioned, §46), Redis fixed-window rate limiting, exact-match
+  approval binding (§29), placeholder risk score (Step 4 replaces), best-effort
+  ClickHouse `runtime_decisions` emit, audit on non-allow.
+- `/v1/policies` (CRUD + bindings + `validate` + `simulate`), `/v1/approvals`
+  (list / approve / reject), minimal `/v1/agents` + `/v1/tools` inventory.
+
+Everything past Step 3 is still a `README.md` placeholder — see
 [`ROADMAP.md`](ROADMAP.md).

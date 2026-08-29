@@ -62,6 +62,7 @@ AgentGuard tasks:
         try {
             if (-not (Test-Path ".venv")) { python -m venv .venv }
             & ".venv/Scripts/python.exe" -m pip install --upgrade pip
+            & ".venv/Scripts/python.exe" -m pip install -e "$Root/packages/policy-engine"
             & ".venv/Scripts/python.exe" -m pip install -e ".[dev]"
         } finally { Pop-Location }
     }

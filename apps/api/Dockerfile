@@ -14,6 +14,10 @@ RUN pip install --upgrade pip && pip install "hatchling" && \
 d=tomllib.load(open('pyproject.toml','rb')); \
 subprocess.check_call([sys.executable,'-m','pip','install',*d['project']['dependencies']])"
 
+# Local monorepo package (PRD §68 — the engine is embeddable + open-source).
+COPY packages/policy-engine /packages/policy-engine
+RUN pip install --no-deps -e /packages/policy-engine
+
 COPY apps/api/ ./
 RUN pip install --no-deps -e .
 
