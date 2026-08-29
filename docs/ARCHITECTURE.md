@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 3)
+## 7. Current state (through Step 4)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -140,5 +140,20 @@ See [`DATA_MODEL.md`](DATA_MODEL.md).
 - `/v1/policies` (CRUD + bindings + `validate` + `simulate`), `/v1/approvals`
   (list / approve / reject), minimal `/v1/agents` + `/v1/tools` inventory.
 
-Everything past Step 3 is still a `README.md` placeholder — see
+**Step 4** — risk engine + DLP ([`RISK_DLP.md`](RISK_DLP.md)):
+
+- `agentguard_api/dlp/` — pure detectors (15 patterns, Luhn-checked cards,
+  key-name secret context), payload walk with JSON-path findings, classification
+  → action resolution with per-org `DataPolicy` overrides and a `NEVER_EXFIL`
+  hard block for credentials.
+- `agentguard_api/risk/` — 7-factor weighted score (identity, permission, tool,
+  data, destination, behavior, historical) → `{risk_score, severity, decision}`.
+  Behavioral factor is a heuristic pending Step 8.
+- Both wired into `/v1/runtime/evaluate`: DLP + policy + risk produce candidate
+  decisions resolved by the same precedence; the real risk score replaces the
+  Step 3 placeholder; classification feeds the policy engine.
+- `/v1/risk/score` (factor breakdown), `/v1/data-security/{scan,detectors,
+  classifications,policies}`.
+
+Everything past Step 4 is still a `README.md` placeholder — see
 [`ROADMAP.md`](ROADMAP.md).

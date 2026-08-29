@@ -39,7 +39,10 @@ agentguard_api/
 ├── inventory/      /v1/agents + /v1/tools (minimal; rich views in Step 7)
 ├── policies/       /v1/policies CRUD + bindings + validate + simulate (PRD §23)
 ├── approvals/      /v1/approvals — list / approve / reject (PRD §29)
-├── runtime/        POST /v1/runtime/evaluate — the critical path (PRD §24–25, §42)
+├── dlp/            Pure detectors + classification + action resolution (PRD §27)
+├── risk/           7-factor risk engine + /v1/risk router (PRD §26)
+├── data_security/  /v1/data-security — scan, classifications, data policies
+├── runtime/        POST /v1/runtime/evaluate — DLP + policy + risk (PRD §24–27, §42)
 ├── audit_log.py    Append-only hash-chained audit writer (PRD §33)
 └── routers/
     └── health.py   /healthz, /readyz
@@ -67,6 +70,6 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 
 | Step | Adds |
 |------|------|
-| 4 | Risk engine + DLP detectors (replace the placeholder risk score) |
 | 6 | Red-team assessment + findings endpoints |
+| 8 | Real behavioral baselines, incidents, agent graph |
 | 9 | Integrations, webhooks, billing/usage endpoints |

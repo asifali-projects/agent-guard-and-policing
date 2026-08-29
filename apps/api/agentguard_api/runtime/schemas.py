@@ -30,11 +30,13 @@ class RateLimitOut(BaseModel):
 class RuntimeEvaluateResponse(BaseModel):
     decision: str  # ALLOW | DENY | APPROVAL | REDACT | RATE_LIMIT  (PRD §24)
     risk_score: int
+    risk_severity: str
     request_id: str
     policy_id: str | None = None
     policy_keys: list[str] = Field(default_factory=list)
     reasons: list[str] = Field(default_factory=list)
     redactions: list[str] = Field(default_factory=list)
+    data_classification: str | None = None
     approval_request_id: uuid.UUID | None = None
     rate_limit: RateLimitOut | None = None
     fail_mode: str

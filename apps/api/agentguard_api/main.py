@@ -11,10 +11,12 @@ from .apikeys.router import router as apikeys_router
 from .approvals.router import router as approvals_router
 from .auth.router import router as auth_router
 from .config import get_settings
+from .data_security.router import router as data_security_router
 from .inventory.router import agents_router, tools_router
 from .logging import configure_logging, get_logger
 from .organizations.router import router as organizations_router
 from .policies.router import router as policies_router
+from .risk.router import router as risk_router
 from .routers import health
 from .runtime.router import router as runtime_router
 
@@ -54,6 +56,8 @@ app.include_router(agents_router)
 app.include_router(tools_router)
 app.include_router(policies_router)
 app.include_router(approvals_router)
+app.include_router(data_security_router)
+app.include_router(risk_router)
 app.include_router(runtime_router)
 
 

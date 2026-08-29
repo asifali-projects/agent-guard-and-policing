@@ -65,7 +65,8 @@ async def test_org_deny_rule(api):
     res = await _evaluate(api, h, agent["id"], "payment.create")
     assert res["decision"] == "DENY"
     assert res["policy_id"] == "FIN-DENY"
-    assert res["risk_score"] >= 80
+    assert 0 <= res["risk_score"] <= 100
+    assert res["risk_severity"] in ("info", "low", "medium", "high", "critical")
 
 
 async def test_conditional_approval_then_grant(api):
