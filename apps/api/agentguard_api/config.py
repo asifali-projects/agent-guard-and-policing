@@ -30,9 +30,7 @@ class Settings(BaseSettings):
         alias="DATABASE_URL",
     )
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
-    kafka_bootstrap_servers: str = Field(
-        default="localhost:19092", alias="KAFKA_BOOTSTRAP_SERVERS"
-    )
+    kafka_bootstrap_servers: str = Field(default="localhost:19092", alias="KAFKA_BOOTSTRAP_SERVERS")
     clickhouse_host: str = Field(default="localhost", alias="CLICKHOUSE_HOST")
     clickhouse_port: int = Field(default=8123, alias="CLICKHOUSE_PORT")
     qdrant_url: str = Field(default="http://localhost:6333", alias="QDRANT_URL")
