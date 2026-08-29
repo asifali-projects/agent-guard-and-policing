@@ -7,10 +7,10 @@ AgentGuard dashboard. Next.js 14 (App Router), React, TypeScript.
 ```powershell
 # from the repo root
 .\tasks.ps1 web-install
-.\tasks.ps1 web-dev        # http://localhost:3000
+.\tasks.ps1 web-dev        # http://localhost:3010
 ```
 
-Set `NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:8000`).
+Set `NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:8010`).
 
 ## Status
 

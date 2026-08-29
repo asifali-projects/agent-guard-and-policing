@@ -26,17 +26,17 @@ class Settings(BaseSettings):
 
     # --- datastores ---
     database_url: str = Field(
-        default="postgresql+asyncpg://agentguard:agentguard@localhost:5432/agentguard",
+        default="postgresql+asyncpg://agentguard:agentguard@localhost:5442/agentguard",
         alias="DATABASE_URL",
     )
-    redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
+    redis_url: str = Field(default="redis://localhost:6389/0", alias="REDIS_URL")
     kafka_bootstrap_servers: str = Field(default="localhost:19092", alias="KAFKA_BOOTSTRAP_SERVERS")
     clickhouse_host: str = Field(default="localhost", alias="CLICKHOUSE_HOST")
-    clickhouse_port: int = Field(default=8123, alias="CLICKHOUSE_PORT")
-    qdrant_url: str = Field(default="http://localhost:6333", alias="QDRANT_URL")
+    clickhouse_port: int = Field(default=8124, alias="CLICKHOUSE_PORT")
+    qdrant_url: str = Field(default="http://localhost:6343", alias="QDRANT_URL")
 
     # --- object storage ---
-    s3_endpoint_url: str = Field(default="http://localhost:9000", alias="S3_ENDPOINT_URL")
+    s3_endpoint_url: str = Field(default="http://localhost:9002", alias="S3_ENDPOINT_URL")
     s3_bucket: str = Field(default="agentguard-artifacts", alias="S3_BUCKET")
 
     @property

@@ -30,12 +30,12 @@ AgentGuard tasks:
   down            Stop all containers
 
   api-install     Create the API virtualenv and install dependencies
-  api-dev         Run the API locally with reload  (http://localhost:8000)
+  api-dev         Run the API locally with reload  (http://localhost:8010)
   api-test        Run the API test suite
   api-lint        Ruff lint + format check for the API
 
   web-install     Install web dashboard dependencies
-  web-dev         Run the web dashboard locally  (http://localhost:3000)
+  web-dev         Run the web dashboard locally  (http://localhost:3010)
 
   fmt             Auto-format Python (ruff)
 "@
@@ -59,8 +59,9 @@ AgentGuard tasks:
         } finally { Pop-Location }
     }
     "api-dev" {
+        $port = if ($env:API_PORT) { $env:API_PORT } else { "8010" }
         Push-Location "$Root/apps/api"
-        try { & ".venv/Scripts/python.exe" -m uvicorn agentguard_api.main:app --reload --port 8000 }
+        try { & ".venv/Scripts/python.exe" -m uvicorn agentguard_api.main:app --reload --port $port }
         finally { Pop-Location }
     }
     "api-test" {

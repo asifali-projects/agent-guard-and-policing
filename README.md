@@ -82,12 +82,19 @@ make infra-up
 
 # 3. Install + run the API (native, with reload)
 make api-install
-make api-dev            # http://localhost:8000  — /healthz, /docs
+make api-dev            # http://localhost:8010  — /healthz, /docs
 
 # 4. Install + run the web dashboard
 make web-install
-make web-dev            # http://localhost:3000
+make web-dev            # http://localhost:3010
 ```
+
+> Windows: use `.\tasks.ps1 <task>` (same task names) instead of `make`.
+
+Host ports use an AgentGuard-specific block (Postgres `5442`, Redis `6389`,
+Redpanda `19092`, ClickHouse `8124`, Qdrant `6343`, MinIO `9002`/`9003`,
+API `8010`, web `3010`) so the stack runs alongside other local instances.
+Override any in `.env`.
 
 To run everything (including the API and web) in containers instead:
 

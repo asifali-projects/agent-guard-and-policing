@@ -33,7 +33,7 @@ api-install: ## Create API venv and install deps
 		.venv/bin/python -m pip install --upgrade pip && \
 		.venv/bin/python -m pip install -e ".[dev]"
 api-dev: ## Run the API locally with reload
-	cd $(API_DIR) && .venv/bin/python -m uvicorn agentguard_api.main:app --reload --port 8000
+	cd $(API_DIR) && .venv/bin/python -m uvicorn agentguard_api.main:app --reload --port $(or $(API_PORT),8010)
 api-test: ## Run the API test suite
 	cd $(API_DIR) && .venv/bin/python -m pytest
 api-lint: ## Ruff lint + format check

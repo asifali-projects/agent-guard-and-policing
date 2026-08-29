@@ -10,8 +10,8 @@ AgentGuard control-plane + runtime API. FastAPI, async SQLAlchemy, Python 3.11.
 .\tasks.ps1 api-dev
 ```
 
-- API: <http://localhost:8000>
-- Interactive docs: <http://localhost:8000/docs>
+- API: <http://localhost:8010>
+- Interactive docs: <http://localhost:8010/docs>
 - Liveness: `GET /healthz` · Readiness: `GET /readyz`
 
 ## Test

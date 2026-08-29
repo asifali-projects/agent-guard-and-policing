@@ -1,5 +1,5 @@
 async function getApiHealth() {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8010";
   try {
     const res = await fetch(`${base}/healthz`, { cache: "no-store" });
     if (!res.ok) return { reachable: false as const };
