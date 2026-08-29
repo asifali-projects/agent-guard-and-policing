@@ -73,6 +73,14 @@ class Settings(BaseSettings):
     microsoft_client_secret: str | None = Field(default=None, alias="MICROSOFT_CLIENT_SECRET")
     microsoft_tenant: str = Field(default="common", alias="MICROSOFT_TENANT")
 
+    # --- AI Security Analyst (PRD §35). Uses Claude when a key is set; falls back
+    # to a deterministic intent router otherwise. Always read-only. ---
+    analyst_enabled: bool = Field(default=True, alias="AGENTGUARD_ANALYST_ENABLED")
+    anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
+    analyst_model: str = Field(default="claude-sonnet-4-5", alias="AGENTGUARD_ANALYST_MODEL")
+    analyst_max_iterations: int = Field(default=6, alias="AGENTGUARD_ANALYST_MAX_ITERS")
+    analyst_hourly_quota: int = Field(default=60, alias="AGENTGUARD_ANALYST_HOURLY_QUOTA")
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

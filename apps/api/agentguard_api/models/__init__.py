@@ -7,6 +7,7 @@ registered before autogenerate runs.
 from __future__ import annotations
 
 from .agent import Agent, AgentIdentity, AgentVersion
+from .analyst import AnalystConversation, AnalystMessage
 from .approval import ApprovalDecision, ApprovalRequest
 from .audit import AuditEvent
 from .auth import ExternalIdentity, Session
@@ -39,6 +40,8 @@ __all__ = [
     "AgentIdentity",
     "AgentTool",
     "AgentVersion",
+    "AnalystConversation",
+    "AnalystMessage",
     "ApiKey",
     "ApprovalDecision",
     "ApprovalRequest",

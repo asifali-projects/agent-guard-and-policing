@@ -6,7 +6,13 @@ import { usePathname } from "next/navigation";
 
 /** Information architecture — PRD §8. */
 const NAV: { group: string; items: { label: string; href: string }[] }[] = [
-  { group: "", items: [{ label: "Dashboard", href: "/" }] },
+  {
+    group: "",
+    items: [
+      { label: "Dashboard", href: "/" },
+      { label: "Security Analyst", href: "/analyst" },
+    ],
+  },
   {
     group: "Security",
     items: [

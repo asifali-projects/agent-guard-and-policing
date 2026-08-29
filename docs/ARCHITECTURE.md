@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 11)
+## 7. Current state (through Step 12)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -249,5 +249,18 @@ Verified end to end in a browser: register → run red-team → remediate a find
 - `/v1/organizations/{id}/scim` (`org.manage`) — enable, default role, token
   rotation; surfaced in the **SSO & SCIM** UI panel.
 
-Steps 12–13 add the AI security analyst and the TypeScript / .NET SDKs — see
-[`ROADMAP.md`](ROADMAP.md).
+**Step 12** — AI Security Analyst ([`ANALYST.md`](ANALYST.md)):
+
+- `analyst/tools.py` — 9 deterministic, org-scoped read-only queries (overview,
+  agents, findings, incidents, threats, audit search, decision explain). `org_id`
+  is bound from the principal, never the model.
+- `analyst/engine.py` — a Claude tool-use loop when `ANTHROPIC_API_KEY` is set;
+  `analyst/fallback.py` (a regex intent router) otherwise and on any model
+  failure, so the feature never depends on network.
+- `/v1/analyst` (`analyst.query`) — ask + persisted conversations
+  (`analyst_conversations` / `analyst_messages`), per-org hourly quota in Redis,
+  every query audited with its engine + tool names.
+- `analyst/asgi.py` + the `ai-analyst` compose service run it as an independent
+  container off the same image. Chat UI at `/analyst`.
+
+Step 13 adds the TypeScript / .NET SDKs — see [`ROADMAP.md`](ROADMAP.md).

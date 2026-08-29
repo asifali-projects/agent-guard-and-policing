@@ -42,6 +42,7 @@ agentguard_api/
 ├── auth/           Sessions, principals, OAuth, /v1/auth router (PRD §9, §51)
 ├── sso/            Enterprise OIDC + SAML 2.0, JIT provisioning, /v1/auth/sso + /v1/organizations/{id}/sso (PRD §9, §51)
 ├── scim/           SCIM 2.0 /scim/v2 Users + Groups, group→role sync, /v1/organizations/{id}/scim admin (PRD §51)
+├── analyst/        AI Security Analyst — read-only tools + Claude/fallback engine, /v1/analyst, asgi.py standalone (PRD §35)
 ├── rbac/           Permission catalog + role grants + seed (PRD §50)
 ├── organizations/  /v1/organizations + members router
 ├── apikeys/        /v1/organizations/{id}/api-keys router (PRD §52)
@@ -85,3 +86,4 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 | 9 | Integrations, webhooks, billing/usage endpoints, GitHub Action |
 | 10 | Enterprise SSO — OIDC + SAML 2.0, domain discovery, JIT provisioning, enforced-SSO password block |
 | 11 | SCIM 2.0 provisioning — /scim/v2 Users + Groups, per-org token, group→role sync, deprovision |
+| 12 | AI Security Analyst — read-only tool library, Claude tool-use loop + deterministic fallback, /v1/analyst |

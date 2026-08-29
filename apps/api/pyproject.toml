@@ -25,6 +25,7 @@ dependencies = [
     "email-validator>=2.2",
     "signxml>=4.0",
     "python-multipart>=0.0.12",
+    "anthropic>=0.40",
 ]
 
 [project.optional-dependencies]

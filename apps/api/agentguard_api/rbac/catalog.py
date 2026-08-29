@@ -34,6 +34,7 @@ PERMISSIONS: dict[str, tuple[str, str]] = {
     "data.manage": ("governance", "Edit data classifications and DLP policies"),
     "audit.read": ("observability", "Read and export the audit log"),
     "analytics.read": ("observability", "View dashboards, risk, and the agent graph"),
+    "analyst.query": ("observability", "Ask the AI Security Analyst read-only questions"),
     "integration.read": ("developer", "View integrations and webhooks"),
     "integration.manage": ("developer", "Connect and configure integrations and webhooks"),
     "runtime.evaluate": ("runtime", "Call the runtime decision endpoint"),
@@ -70,10 +71,11 @@ SYSTEM_ROLE_GRANTS: dict[MembershipRole, frozenset[str]] = {
             "data.manage",
             "audit.read",
             "analytics.read",
+            "analyst.query",
             "integration.read",
         }
     ),
-    MembershipRole.security_analyst: _READ_ONLY | {"analytics.read", "audit.read"},
+    MembershipRole.security_analyst: _READ_ONLY | {"analytics.read", "audit.read", "analyst.query"},
     MembershipRole.developer: frozenset(
         {
             "org.read",
@@ -92,10 +94,11 @@ SYSTEM_ROLE_GRANTS: dict[MembershipRole, frozenset[str]] = {
             "integration.read",
             "integration.manage",
             "analytics.read",
+            "analyst.query",
             "runtime.evaluate",
         }
     ),
-    MembershipRole.auditor: _READ_ONLY | {"audit.read", "analytics.read"},
+    MembershipRole.auditor: _READ_ONLY | {"audit.read", "analytics.read", "analyst.query"},
     MembershipRole.billing_admin: frozenset({"org.read", "org.billing"}),
 }
 

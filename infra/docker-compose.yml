@@ -26,6 +26,9 @@ x-api-env: &api-env
   S3_BUCKET: ${S3_BUCKET:-agentguard-artifacts}
   AGENTGUARD_SECRET_KEY: ${AGENTGUARD_SECRET_KEY:-dev-only-insecure-change-me-0000000000000000}
   AGENTGUARD_CORS_ORIGINS: ${AGENTGUARD_CORS_ORIGINS:-http://localhost:3010,http://127.0.0.1:3010}
+  # AI Security Analyst (PRD §35) — falls back to a deterministic router if unset.
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  AGENTGUARD_ANALYST_MODEL: ${AGENTGUARD_ANALYST_MODEL:-claude-sonnet-4-5}
 
 services:
   # --- PostgreSQL: core transactional database -----------------------------
@@ -187,6 +190,27 @@ services:
     environment: *api-env
     ports:
       - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # AI Security Analyst — read-only NL Q&A service (PRD §35, §68). Same image as
+  # the API, different entrypoint; independently scalable.
+  ai-analyst:
+    <<: *restart
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    environment: *api-env
+    command:
+      ["uvicorn", "agentguard_api.analyst.asgi:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "${ANALYST_PORT:-8020}:8000"
     depends_on:
       postgres:
         condition: service_healthy

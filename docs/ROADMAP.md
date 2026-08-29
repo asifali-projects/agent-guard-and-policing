@@ -2,8 +2,8 @@
 
 The PRD ([`../agent-police-prd.docx`](../agent-police-prd.docx)) describes the
 full target product. It is deliberately **not** MVP-scoped. Execution is
-sequenced into 14 steps. Steps 0–11 are complete; 12–13 add the remaining
-enterprise features on top.
+sequenced into 14 steps. Steps 0–12 are complete; Step 13 adds the remaining
+multi-language SDKs.
 
 Legend: ☐ not started · ◐ in progress · ☑ done
 
@@ -21,7 +21,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 9 | Integrations + CI/CD + Billing | Event bus + HMAC-signed webhook / Slack / PagerDuty / SIEM delivery, `/v1/integrations` + `/v1/webhooks`, `agentguard deploy` CI gate + composite GitHub Action, Redis usage metering + `/v1/billing` (plans, subscription, usage), Integrations + Billing UI. See [`INTEGRATIONS.md`](INTEGRATIONS.md) | §43, §60–65 | ☑ |
 | 10 | Enterprise SSO | Generic OIDC (discovery + JWKS `id_token` verification) and SAML 2.0 (signed-assertion verification via `signxml`, no libxmlsec), `sso_connections` model + migration, domain-based discovery `/v1/auth/sso/discover`, IdP redirect + OIDC callback + SAML ACS, JIT user provisioning, enforced-SSO password block, `/v1/organizations/{id}/sso` CRUD + SP metadata, login + callback + settings UI. See [`SSO.md`](SSO.md) | §9, §51 | ☑ |
 | 11 | SCIM provisioning | SCIM 2.0 `/scim/v2` (Users + Groups, RFC 7643/7644), per-org bearer token, `eq` filtering, PatchOp, JIT provisioning into `memberships`, `active:false` deprovision (+ session revoke), group-name→role mapping (most-privileged wins), `/v1/organizations/{id}/scim` admin + token rotation, SSO & SCIM UI panel. See [`SCIM.md`](SCIM.md) | §51 | ☑ |
-| 12 | AI Security Analyst | `services/ai-analyst` — read-only natural-language Q&A | §35 | ☐ |
+| 12 | AI Security Analyst | `agentguard_api/analyst/` — read-only NL Q&A: 9-tool org-scoped read library, Claude tool-use loop with a deterministic fallback router, `/v1/analyst` (ask + conversations, `analyst.query` perm), per-org hourly quota, audited queries, `analyst/asgi.py` standalone service + `ai-analyst` compose service, chat UI. See [`ANALYST.md`](ANALYST.md) | §35 | ☑ |
 | 13 | TypeScript + .NET SDKs | `@agentguard/sdk`, `AgentGuard.NET` | §37, §39–40 | ☐ |
 
 ## Mapping to PRD engineering phases (§87)
@@ -31,7 +31,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 - **Phase C — Offensive Security:** Step 6
 - **Phase D — Platform:** Steps 7–9 (dashboard, graph, analytics, incidents, integrations)
 - **Phase E — Enterprise:** Steps 10–11
-- **Phase F — Intelligence:** Steps 8, 12
+- **Phase F — Intelligence:** Steps 8, 12 (behavioral detection, AI analyst)
 
 ## Explicitly deferred (PRD §88)
 

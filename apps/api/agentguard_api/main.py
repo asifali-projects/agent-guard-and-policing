@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__, cache, db
+from .analyst.router import router as analyst_router
 from .apikeys.router import router as apikeys_router
 from .approvals.router import router as approvals_router
 from .audit.router import router as audit_router
@@ -96,6 +97,7 @@ app.include_router(graph_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
 app.include_router(runtime_router)
+app.include_router(analyst_router)
 
 
 @app.get("/", tags=["meta"], summary="Service banner")

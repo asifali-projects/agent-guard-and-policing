@@ -69,7 +69,7 @@ Built-in roles and their grants live in
 | `auditor` | read-only + audit + analytics |
 | `billing_admin` | `org.read`, `org.billing` only |
 
-Full permission list (31 codes): see `catalog.PERMISSIONS`.
+Full permission list (32 codes, incl. `analyst.query`): see `catalog.PERMISSIONS`.
 
 ### API keys (PRD §52)
 

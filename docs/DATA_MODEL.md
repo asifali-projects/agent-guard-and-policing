@@ -40,9 +40,11 @@ they drift.
 | Detection (Step 8) | `detection.py` | `behavior_profiles` (per-agent baseline) |
 | Enterprise SSO (Step 10) | `sso.py` | `sso_connections` (per-org SAML/OIDC IdP) |
 | SCIM (Step 11) | `scim.py` | `scim_configs`, `scim_users`, `scim_groups`, `scim_group_members` |
+| AI Analyst (Step 12) | `analyst.py` | `analyst_conversations`, `analyst_messages` |
 
-44 tables. Migrations: `0001` initial · `0002` auth · `0003` tz-aware datetimes ·
-`0004` behavior_profiles · `0005` sso_connections · `0006` scim.
+46 tables. Migrations: `0001` initial · `0002` auth · `0003` tz-aware datetimes ·
+`0004` behavior_profiles · `0005` sso_connections · `0006` scim ·
+`0007` analyst_conversations.
 
 ### Notable relationships
 
