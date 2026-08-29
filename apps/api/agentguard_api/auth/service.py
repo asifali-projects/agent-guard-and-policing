@@ -80,7 +80,13 @@ async def register(
 
 
 async def authenticate(session: AsyncSession, *, email: str, password: str) -> User:
-    user = await session.scalar(select(User).where(func.lower(User.email) == email.strip().lower()))
+    from ..sso import enforced_for_email
+
+    email_norm = email.strip().lower()
+    if await enforced_for_email(session, email_norm) is not None:
+        raise AuthError("SSO is required for this domain")
+
+    user = await session.scalar(select(User).where(func.lower(User.email) == email_norm))
     if user is None or not user.hashed_password or not user.is_active:
         raise AuthError("invalid credentials")
     if not verify_password(password, user.hashed_password):

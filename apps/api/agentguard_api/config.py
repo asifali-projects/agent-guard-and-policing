@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     oauth_redirect_base_url: str = Field(
         default="http://localhost:8010", alias="AGENTGUARD_OAUTH_REDIRECT_BASE"
     )
+    # Where the browser lands after an SSO round-trip (the web app reads the
+    # tokens from the URL fragment). PRD §9, §51.
+    web_base_url: str = Field(default="http://localhost:3010", alias="AGENTGUARD_WEB_BASE_URL")
     google_client_id: str | None = Field(default=None, alias="GOOGLE_CLIENT_ID")
     google_client_secret: str | None = Field(default=None, alias="GOOGLE_CLIENT_SECRET")
     microsoft_client_id: str | None = Field(default=None, alias="MICROSOFT_CLIENT_ID")

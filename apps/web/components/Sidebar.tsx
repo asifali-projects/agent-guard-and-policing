@@ -42,6 +42,7 @@ const NAV: { group: string; items: { label: string; href: string }[] }[] = [
     group: "Administration",
     items: [
       { label: "Team", href: "/team" },
+      { label: "Single Sign-On", href: "/sso" },
       { label: "Billing", href: "/billing" },
     ],
   },

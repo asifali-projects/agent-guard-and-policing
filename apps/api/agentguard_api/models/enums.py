@@ -274,3 +274,10 @@ class ActorType(StrEnum):
     user = "user"
     agent = "agent"
     service_account = "service_account"
+
+
+class SsoProtocol(StrEnum):
+    """Enterprise SSO — PRD §9, §51."""
+
+    oidc = "oidc"
+    saml = "saml"

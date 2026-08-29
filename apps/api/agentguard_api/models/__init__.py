@@ -28,6 +28,7 @@ from .organization import (
 )
 from .policy import Policy, PolicyBinding, PolicyVersion
 from .redteam import RedTeamAssessment, RedTeamFinding, RedTeamTest
+from .sso import SsoConnection
 from .tool import AgentTool, Tool, ToolVersion
 
 target_metadata = Base.metadata
@@ -65,6 +66,7 @@ __all__ = [
     "Role",
     "ServiceAccount",
     "Session",
+    "SsoConnection",
     "Subscription",
     "Threat",
     "Tool",

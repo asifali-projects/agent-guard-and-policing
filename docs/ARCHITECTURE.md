@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 9)
+## 7. Current state (through Step 10)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -223,5 +223,18 @@ Verified end to end in a browser: register → run red-team → remediate a find
   a composite GitHub Action `.github/actions/agentguard`.
 - Frontend: Integrations + Billing pages.
 
-Steps 10–13 add enterprise SSO/SCIM, multi-region, the AI security analyst, and
-the TypeScript / .NET SDKs — see [`ROADMAP.md`](ROADMAP.md).
+**Step 10** — enterprise SSO ([`SSO.md`](SSO.md)):
+
+- `sso/` — generic OIDC (discovery + JWKS `id_token` verification) and SAML 2.0
+  (`signxml` signed-assertion verification, no libxmlsec), the `sso_connections`
+  model, domain-based discovery, IdP redirect / OIDC callback / SAML ACS, and
+  JIT user provisioning (`external_identities` `provider="sso:<cid>"` + membership
+  at the connection's `default_role`).
+- `/v1/auth/sso/*` sign-in flow ends by handing the browser a session in the URL
+  fragment; `/v1/organizations/{id}/sso` is `org.manage` CRUD + SP metadata.
+- `auth.service.authenticate` blocks password login for domains on an `enforced`
+  connection.
+- Frontend: login "Single sign-on" button, `/sso/callback`, Administration → SSO.
+
+Steps 11–13 add SCIM provisioning, the AI security analyst, and the
+TypeScript / .NET SDKs — see [`ROADMAP.md`](ROADMAP.md).

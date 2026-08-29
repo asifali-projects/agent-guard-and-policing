@@ -2,7 +2,7 @@
 
 The PRD ([`../agent-police-prd.docx`](../agent-police-prd.docx)) describes the
 full target product. It is deliberately **not** MVP-scoped. Execution is
-sequenced into 14 steps. Steps 0–9 bring the product end-to-end; 10–13 add
+sequenced into 14 steps. Steps 0–10 are complete; 11–13 add the remaining
 enterprise features on top.
 
 Legend: ☐ not started · ◐ in progress · ☑ done
@@ -19,7 +19,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 7 | Web dashboard | Next.js 14 + Tailwind + TanStack Query: auth, §8 sidebar, "Am I safe?" dashboard, agent inventory + detail tabs (posture breakdown), findings + §22 actions, policies + validate, approvals, red-team, audit + chain-verify, tools/MCP/data-security/API-keys/team. `GET /v1/dashboard/summary` + CORS. See [`WEB.md`](WEB.md) | §8–14, §22, §29, §33 | ☑ |
 | 8 | Detection + Incidents + Graph | Per-agent `behavior_profiles` + anomaly detector (feeds risk, raises threats, auto-opens incidents), `/v1/incidents` lifecycle + response actions (pause agent, block tool), paused-agent runtime block, `/v1/agents/{id}/graph` + `/blast-radius`, audit CSV export, Threats/Incidents/Graph UI. See [`DETECTION.md`](DETECTION.md) | §28, §30–33 | ☑ |
 | 9 | Integrations + CI/CD + Billing | Event bus + HMAC-signed webhook / Slack / PagerDuty / SIEM delivery, `/v1/integrations` + `/v1/webhooks`, `agentguard deploy` CI gate + composite GitHub Action, Redis usage metering + `/v1/billing` (plans, subscription, usage), Integrations + Billing UI. See [`INTEGRATIONS.md`](INTEGRATIONS.md) | §43, §60–65 | ☑ |
-| 10 | Enterprise SSO | SAML / OIDC identity federation | §9, §51 | ☐ |
+| 10 | Enterprise SSO | Generic OIDC (discovery + JWKS `id_token` verification) and SAML 2.0 (signed-assertion verification via `signxml`, no libxmlsec), `sso_connections` model + migration, domain-based discovery `/v1/auth/sso/discover`, IdP redirect + OIDC callback + SAML ACS, JIT user provisioning, enforced-SSO password block, `/v1/organizations/{id}/sso` CRUD + SP metadata, login + callback + settings UI. See [`SSO.md`](SSO.md) | §9, §51 | ☑ |
 | 11 | SCIM provisioning | Automated user lifecycle from customer IdP | §51 | ☐ |
 | 12 | AI Security Analyst | `services/ai-analyst` — read-only natural-language Q&A | §35 | ☐ |
 | 13 | TypeScript + .NET SDKs | `@agentguard/sdk`, `AgentGuard.NET` | §37, §39–40 | ☐ |

@@ -40,6 +40,7 @@ agentguard_api/
 ├── billing/        Redis usage metering + /v1/billing (PRD §64–65)
 ├── security/       Password/JWT/API-key/TOTP primitives (no DB, no FastAPI)
 ├── auth/           Sessions, principals, OAuth, /v1/auth router (PRD §9, §51)
+├── sso/            Enterprise OIDC + SAML 2.0, JIT provisioning, /v1/auth/sso + /v1/organizations/{id}/sso (PRD §9, §51)
 ├── rbac/           Permission catalog + role grants + seed (PRD §50)
 ├── organizations/  /v1/organizations + members router
 ├── apikeys/        /v1/organizations/{id}/api-keys router (PRD §52)
@@ -81,3 +82,4 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 | Step | Adds |
 |------|------|
 | 9 | Integrations, webhooks, billing/usage endpoints, GitHub Action |
+| 10 | Enterprise SSO — OIDC + SAML 2.0, domain discovery, JIT provisioning, enforced-SSO password block |
