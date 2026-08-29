@@ -33,6 +33,7 @@ api-install: ## Create API venv and install deps
 	cd $(API_DIR) && python -m venv .venv && \
 		.venv/bin/python -m pip install --upgrade pip && \
 		.venv/bin/python -m pip install -e ../../packages/policy-engine && \
+		.venv/bin/python -m pip install -e ../../packages/sdk-python && \
 		.venv/bin/python -m pip install -e ".[dev]"
 api-dev: ## Run the API locally with reload
 	cd $(API_DIR) && .venv/bin/python -m uvicorn agentguard_api.main:app --reload --port $(or $(API_PORT),8010)

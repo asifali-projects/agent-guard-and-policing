@@ -43,6 +43,7 @@ agentguard_api/
 ├── risk/           7-factor risk engine + /v1/risk router (PRD §26)
 ├── data_security/  /v1/data-security — scan, classifications, data policies
 ├── runtime/        POST /v1/runtime/evaluate — DLP + policy + risk (PRD §24–27, §42)
+├── audit/          /v1/audit/events + /v1/audit/verify (PRD §33)
 ├── audit_log.py    Append-only hash-chained audit writer (PRD §33)
 └── routers/
     └── health.py   /healthz, /readyz

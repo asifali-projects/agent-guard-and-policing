@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 4)
+## 7. Current state (through Step 5)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -155,5 +155,18 @@ See [`DATA_MODEL.md`](DATA_MODEL.md).
 - `/v1/risk/score` (factor breakdown), `/v1/data-security/{scan,detectors,
   classifications,policies}`.
 
-Everything past Step 4 is still a `README.md` placeholder — see
+**Step 5** — Python SDK + CLI ([`SDK.md`](SDK.md)):
+
+- `packages/sdk-python` (`agentguard`) — sync `httpx` client; `@guard.tool` binds
+  arguments and calls `/v1/runtime/evaluate`, enforcing the decision
+  (deny→raise, approval→raise with id, redact→mask args + run, rate_limit→raise).
+  Agent identity auto-resolves/registers. Config: arg > env > `~/.agentguard/config.toml`.
+  Fail-safe honours `fail_mode` when the API is unreachable.
+- The `agentguard` CLI ships in the same package: `login`, `init`, `whoami`,
+  `agents list`, `policy validate`, `scan`, `logs` (+ stubs for `redteam` / `mcp`
+  / `deploy`).
+- API: `GET /v1/audit/events` (filters + keyset pagination) and
+  `GET /v1/audit/verify` (per-org hash-chain recompute).
+
+Everything past Step 5 is still a `README.md` placeholder — see
 [`ROADMAP.md`](ROADMAP.md).

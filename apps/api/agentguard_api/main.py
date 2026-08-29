@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from . import __version__, cache, db
 from .apikeys.router import router as apikeys_router
 from .approvals.router import router as approvals_router
+from .audit.router import router as audit_router
 from .auth.router import router as auth_router
 from .config import get_settings
 from .data_security.router import router as data_security_router
@@ -58,6 +59,7 @@ app.include_router(policies_router)
 app.include_router(approvals_router)
 app.include_router(data_security_router)
 app.include_router(risk_router)
+app.include_router(audit_router)
 app.include_router(runtime_router)
 
 

@@ -14,7 +14,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 2 | Auth + tenancy + RBAC | Email + OAuth login, JWT sessions (rotation/reuse-detection/device tracking), TOTP MFA, 7-role RBAC + 31-permission catalog, tenant-scoping deps, API-key system (§52), audit hash-chain. See [`AUTH.md`](AUTH.md) | §9, §49–52 | ☑ |
 | 3 | Policy Engine + Runtime API | `packages/policy-engine` (pure, 21 tests), `POST /v1/runtime/evaluate`, hierarchy + precedence + conditions, Redis policy cache, rate limiting, approval binding, policy/approval/inventory routers. See [`POLICY.md`](POLICY.md) | §23–25, §29, §42, §46 | ☑ |
 | 4 | Risk Engine + DLP | 7-factor risk engine + 15 DLP detectors (Luhn-checked cards, keys, secrets), classification → action, NEVER_EXFIL, integrated into `/v1/runtime/evaluate` (real risk score replaces the placeholder), `/v1/risk` + `/v1/data-security` routers. See [`RISK_DLP.md`](RISK_DLP.md) | §26–27 | ☑ |
-| 5 | Python SDK + CLI | `pip install agentguard`, `guard.protect()`, `@guard.tool`, `agentguard` CLI | §36–38, §71 | ☐ |
+| 5 | Python SDK + CLI | `agentguard` package (SDK + CLI): `@guard.tool` enforces via `/v1/runtime/evaluate` (deny/approval/redact/rate-limit + fail-safe), identity auto-register, `agentguard login/agents/policy validate/scan/logs`, `GET /v1/audit/events`. See [`SDK.md`](SDK.md) | §33, §36–38, §71 | ☑ |
 | 6 | Red-Team Engine | `services/red-team` pipeline, attack categories, assessment API, CI-triggered re-tests | §18–22 | ☐ |
 | 7 | Web dashboard | Next.js IA (§8), dashboard, agent inventory/detail, findings, policies, approvals, audit | §8–14, §22, §29 | ☐ |
 | 8 | Detection + Incidents + Graph | Behavioral baseline/anomaly, incident lifecycle, agent graph / blast radius, audit export | §28, §30–33 | ☐ |

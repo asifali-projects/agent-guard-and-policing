@@ -1,17 +1,9 @@
 # packages/cli
 
-`agentguard` — the developer CLI (Python). **Open-source** (PRD §68).
+The `agentguard` CLI ships **inside the `agentguard` package**
+([`../sdk-python`](../sdk-python)) so that `pip install agentguard` gives you both
+the SDK and the command — see [`../../docs/SDK.md`](../../docs/SDK.md).
 
-```
-agentguard login
-agentguard init
-agentguard agents list
-agentguard scan
-agentguard redteam run
-agentguard policy validate
-agentguard mcp scan
-agentguard logs
-agentguard deploy
-```
-
-Implemented in **Step 5** (alongside the Python SDK).
+This directory is reserved for a future standalone CLI distribution (extra
+commands, shell completions, self-update) if the CLI ever needs to version
+independently of the SDK. Nothing lives here yet.
