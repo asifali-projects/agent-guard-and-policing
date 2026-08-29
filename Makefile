@@ -6,7 +6,8 @@ PY := $(API_DIR)/.venv/bin/python
 
 .DEFAULT_GOAL := help
 .PHONY: help infra-up infra-down infra-clean infra-logs infra-ps up down \
-        api-install api-dev api-test api-lint web-install web-dev fmt
+        api-install api-dev api-test api-lint web-install web-dev fmt \
+        db-migrate db-check db-downgrade events-migrate
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -40,6 +41,15 @@ api-lint: ## Ruff lint + format check
 	cd $(API_DIR) && .venv/bin/python -m ruff check . && .venv/bin/python -m ruff format --check .
 fmt: ## Auto-format Python
 	cd $(API_DIR) && .venv/bin/python -m ruff format . && .venv/bin/python -m ruff check --fix .
+
+db-migrate: ## Apply Postgres migrations
+	cd $(API_DIR) && .venv/bin/python -m alembic upgrade head
+db-check: ## Fail if models drifted from migrations
+	cd $(API_DIR) && .venv/bin/python -m alembic check
+db-downgrade: ## Roll back the last migration
+	cd $(API_DIR) && .venv/bin/python -m alembic downgrade -1
+events-migrate: ## Apply the ClickHouse event-store schema
+	cd $(API_DIR) && .venv/bin/python -m agentguard_api.events.migrate
 
 web-install: ## Install web deps
 	cd $(WEB_DIR) && npm install

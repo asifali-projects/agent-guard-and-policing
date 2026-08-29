@@ -14,6 +14,18 @@ name: agentguard
 x-restart: &restart
   restart: unless-stopped
 
+x-api-env: &api-env
+  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-agentguard}:${POSTGRES_PASSWORD:-agentguard}@postgres:5432/${POSTGRES_DB:-agentguard}
+  REDIS_URL: redis://redis:6379/0
+  KAFKA_BOOTSTRAP_SERVERS: redpanda:29092
+  CLICKHOUSE_HOST: clickhouse
+  QDRANT_URL: http://qdrant:6333
+  S3_ENDPOINT_URL: http://minio:9000
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:-agentguard}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:-agentguard-secret}
+  S3_BUCKET: ${S3_BUCKET:-agentguard-artifacts}
+  AGENTGUARD_SECRET_KEY: ${AGENTGUARD_SECRET_KEY:-dev-only-insecure-change-me}
+
 services:
   # --- PostgreSQL: core transactional database -----------------------------
   postgres:
@@ -147,23 +159,29 @@ services:
     restart: "no"
 
   # --- Application containers (opt-in: --profile apps) ------------------
+  # One-shot: apply Postgres migrations + ClickHouse event schema, then exit.
+  migrate:
+    profiles: ["apps"]
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    environment: *api-env
+    command: >-
+      /bin/sh -c "alembic upgrade head && python -m agentguard_api.events.migrate"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    restart: "no"
+
   api:
     <<: *restart
     profiles: ["apps"]
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
-    environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-agentguard}:${POSTGRES_PASSWORD:-agentguard}@postgres:5432/${POSTGRES_DB:-agentguard}
-      REDIS_URL: redis://redis:6379/0
-      KAFKA_BOOTSTRAP_SERVERS: redpanda:29092
-      CLICKHOUSE_HOST: clickhouse
-      QDRANT_URL: http://qdrant:6333
-      S3_ENDPOINT_URL: http://minio:9000
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-agentguard}
-      S3_SECRET_KEY: ${S3_SECRET_KEY:-agentguard-secret}
-      S3_BUCKET: ${S3_BUCKET:-agentguard-artifacts}
-      AGENTGUARD_SECRET_KEY: ${AGENTGUARD_SECRET_KEY:-dev-only-insecure-change-me}
+    environment: *api-env
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
@@ -171,6 +189,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   web:
     <<: *restart

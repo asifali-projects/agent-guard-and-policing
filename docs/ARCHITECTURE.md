@@ -93,11 +93,23 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (Step 0)
+## 7. Current state (through Step 1)
 
-Implemented: repo layout, `infra/docker-compose.yml` (all six backing services
+**Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
-OpenAPI), `apps/web` Next.js skeleton, CI (lint + test), this document set.
+OpenAPI), `apps/web` Next.js skeleton, CI, this document set.
 
-Everything else is a `README.md` placeholder describing what the directory will
-hold and which step fills it in — see [`ROADMAP.md`](ROADMAP.md).
+**Step 1** — the full control-plane data model:
+
+- 36 SQLAlchemy 2.0 models under `apps/api/agentguard_api/models/`, one module
+  per domain, covering every table in PRD §44.
+- Deterministic constraint naming; VARCHAR-backed enums (adding a value is a
+  code change, not an `ALTER TYPE`).
+- Alembic (async) with the initial migration; `alembic check` gates drift in CI.
+- Append-only, hash-chained `audit_events` (PRD §33).
+- ClickHouse event store — `agent_events`, `tool_calls`, `security_events`,
+  `runtime_decisions`, `behavior_events` (PRD §45) — applied by
+  `python -m agentguard_api.events.migrate`.
+
+See [`DATA_MODEL.md`](DATA_MODEL.md). Everything past Step 1 is still a
+`README.md` placeholder — see [`ROADMAP.md`](ROADMAP.md).

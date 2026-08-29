@@ -12,6 +12,20 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: agentguard
+          POSTGRES_USER: agentguard
+          POSTGRES_PASSWORD: agentguard
+        ports:
+          - 5442:5432
+        options: >-
+          --health-cmd "pg_isready -U agentguard"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://agentguard:agentguard@localhost:5442/agentguard
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,6 +35,8 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: ruff format --check .
+      - run: alembic upgrade head
+      - run: alembic check
       - run: pytest -q
 
   web:

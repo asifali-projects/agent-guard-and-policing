@@ -34,6 +34,12 @@ AgentGuard tasks:
   api-test        Run the API test suite
   api-lint        Ruff lint + format check for the API
 
+  db-migrate      Apply Postgres migrations (alembic upgrade head)
+  db-revision     Autogenerate a migration from model changes:  .\tasks.ps1 db-revision "message"
+  db-check        Fail if models have drifted from migrations
+  db-downgrade    Roll back the last migration
+  events-migrate  Apply the ClickHouse event-store schema
+
   web-install     Install web dashboard dependencies
   web-dev         Run the web dashboard locally  (http://localhost:3010)
 
@@ -67,6 +73,32 @@ AgentGuard tasks:
     "api-test" {
         Push-Location "$Root/apps/api"
         try { & ".venv/Scripts/python.exe" -m pytest }
+        finally { Pop-Location }
+    }
+    "db-migrate" {
+        Push-Location "$Root/apps/api"
+        try { & ".venv/Scripts/python.exe" -m alembic upgrade head }
+        finally { Pop-Location }
+    }
+    "db-revision" {
+        if (-not $args -or -not $args[0]) { Write-Error "usage: .\tasks.ps1 db-revision `"message`""; exit 1 }
+        Push-Location "$Root/apps/api"
+        try { & ".venv/Scripts/python.exe" -m alembic revision --autogenerate -m $args[0] }
+        finally { Pop-Location }
+    }
+    "db-check" {
+        Push-Location "$Root/apps/api"
+        try { & ".venv/Scripts/python.exe" -m alembic check }
+        finally { Pop-Location }
+    }
+    "db-downgrade" {
+        Push-Location "$Root/apps/api"
+        try { & ".venv/Scripts/python.exe" -m alembic downgrade -1 }
+        finally { Pop-Location }
+    }
+    "events-migrate" {
+        Push-Location "$Root/apps/api"
+        try { & ".venv/Scripts/python.exe" -m agentguard_api.events.migrate }
         finally { Pop-Location }
     }
     "api-lint" {

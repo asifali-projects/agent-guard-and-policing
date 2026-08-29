@@ -29,15 +29,28 @@ agentguard_api/
 ├── logging.py      Structured JSON logging
 ├── db.py           Async engine + ping()
 ├── cache.py        Redis client + ping()
+├── models/         SQLAlchemy 2.0 models (PRD §44) — one module per domain
+├── events/         ClickHouse event-store schema + bootstrap (PRD §45)
 └── routers/
     └── health.py   /healthz, /readyz
+migrations/         Alembic (async) — initial schema in versions/
 ```
+
+## Database
+
+```powershell
+# from the repo root, with infra running
+.\tasks.ps1 db-migrate        # alembic upgrade head
+.\tasks.ps1 events-migrate     # ClickHouse event tables
+.\tasks.ps1 db-check           # fail if models drifted from migrations
+```
+
+See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md).
 
 ## Roadmap inside this package
 
 | Step | Adds |
 |------|------|
-| 1 | SQLAlchemy models + Alembic migrations (PRD §44) |
 | 2 | Auth (OAuth/OIDC/SAML), org/tenant scoping, RBAC, API keys |
 | 3 | `POST /v1/runtime/evaluate`, policy hierarchy, decision engine |
 | 4 | Risk engine + DLP hooks |

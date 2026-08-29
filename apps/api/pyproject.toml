@@ -14,6 +14,8 @@ dependencies = [
     "pydantic-settings>=2.6",
     "sqlalchemy[asyncio]>=2.0.36",
     "asyncpg>=0.30",
+    "greenlet>=3.1",
+    "alembic>=1.14",
     "redis>=5.2",
     "structlog>=24.4",
     "httpx>=0.27",
@@ -33,13 +35,20 @@ packages = ["agentguard_api"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# Alembic writes these; don't lint generated migration bodies.
+extend-exclude = ["migrations/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC", "S", "RUF"]
-ignore = ["S101"]  # assert is fine in tests
+ignore = [
+    "S101",    # assert is fine in tests
+    "RUF002",  # en-dash in docstrings is deliberate (matches the PRD)
+    "RUF003",  # en-dash in comments is deliberate
+]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S105", "S106"]
+"tests/**" = ["S105", "S106", "S603", "S607"]
+"agentguard_api/models/enums.py" = ["S105"]  # enum member values, not secrets
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

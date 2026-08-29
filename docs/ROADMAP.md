@@ -10,7 +10,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | Step | Name | Key deliverables | PRD | State |
 |------|------|------------------|-----|-------|
 | 0 | Repo + infra scaffold | Monorepo layout, `docker-compose` (Postgres, Redis, Redpanda, ClickHouse, Qdrant, MinIO), FastAPI skeleton with health probes, Next.js skeleton, CI, docs | §53–56 | ☑ |
-| 1 | Data model + migrations | SQLAlchemy models + Alembic for all Postgres tables; ClickHouse event tables | §44–45 | ☐ |
+| 1 | Data model + migrations | 36 SQLAlchemy models + Alembic initial migration for all Postgres tables; 5 ClickHouse event tables + bootstrap. See [`DATA_MODEL.md`](DATA_MODEL.md) | §44–45 | ☑ |
 | 2 | Auth + tenancy + RBAC | Email/OAuth login, org isolation, 7 roles, API-key system, sessions, MFA stubs | §49–52 | ☐ |
 | 3 | Policy Engine + Runtime API | `packages/policy-engine`, `POST /v1/runtime/evaluate`, policy hierarchy, decision engine, Redis cache | §23–25, §42 | ☐ |
 | 4 | Risk Engine + DLP | `services/risk-engine` (7 factors), data classifiers (PII/secrets/keys), redact/block | §26–27 | ☐ |
