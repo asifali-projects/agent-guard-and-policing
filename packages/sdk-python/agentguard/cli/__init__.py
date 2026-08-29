@@ -13,8 +13,6 @@ from .. import config as _config
 from ..client import Client
 from ..exceptions import AgentGuardError
 
-_COMING = {"deploy": 9}
-
 
 def _client(ctx: click.Context) -> Client:
     cfg = _config.resolve(
@@ -270,11 +268,99 @@ def mcp_scan(ctx: click.Context, server_name: str | None) -> None:
 
 
 @main.command()
-def deploy() -> None:
-    """Deploy-time security gate (Step 9)."""
-    step = _COMING["deploy"]
-    click.echo(f"`agentguard deploy` arrives in Step {step}.", err=True)
-    raise SystemExit(2)
+@click.option(
+    "--policies",
+    "policies_dir",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Directory of policy spec files (*.json) to validate.",
+)
+@click.option("--agent", "agents", multiple=True, help="Agent(s) to red-team (default: all).")
+@click.option(
+    "--environment",
+    type=click.Choice(["development", "staging", "production"]),
+    default="production",
+)
+@click.option(
+    "--profile",
+    type=click.Choice(["quick", "standard", "deep"]),
+    default="quick",
+    show_default=True,
+)
+@click.option(
+    "--fail-on",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+    default="high",
+    show_default=True,
+)
+@click.option(
+    "--pr-comment",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="Write a Markdown summary here (for a CI PR comment).",
+)
+@click.pass_context
+def deploy(
+    ctx: click.Context,
+    policies_dir: Path | None,
+    agents: tuple[str, ...],
+    environment: str,
+    profile: str,
+    fail_on: str,
+    pr_comment: Path | None,
+) -> None:
+    """Deploy-time security gate — validate policies + red-team, fail on findings (PRD §60)."""
+    client = _client(ctx)
+    lines: list[str] = ["## AgentGuard Security", ""]
+    failed = False
+    try:
+        if policies_dir:
+            bad = 0
+            for f in sorted(policies_dir.glob("*.json")):
+                spec = json.loads(f.read_text(encoding="utf-8"))
+                spec = spec.get("spec", spec)
+                r = client.post("/v1/policies/validate", json={"spec": spec})
+                if not r["valid"]:
+                    bad += 1
+                    failed = True
+                    lines.append(f"- [invalid] `{f.name}` - {'; '.join(r['errors'])}")
+            lines.append(f"- Policies: {'all valid' if not bad else f'{bad} invalid'}")
+
+        targets = list(agents)
+        if not targets:
+            targets = [
+                a["name"] for a in client.get("/v1/agents") if a["environment"] == environment
+            ]
+        threshold = _SEVERITY_RANK[fail_on]
+        total_findings = 0
+        for name in targets:
+            agent_id = client.resolve_agent_id(name=name, environment=environment)
+            a = client.post(
+                "/v1/redteam/assessments",
+                json={"agent_id": agent_id, "profile": profile, "environment": environment},
+            )
+            s = a["summary"]
+            total_findings += s["failed"]
+            sev = s.get("by_severity", {})
+            blockers = sum(v for k, v in sev.items() if _SEVERITY_RANK.get(k, 0) >= threshold)
+            mark = "FAIL" if blockers else "ok"
+            defended = f"{s['passed']}/{s['total']}"
+            lines.append(f"- [{mark}] **{name}**: {defended} defended, {s['failed']} finding(s)")
+            if blockers:
+                failed = True
+
+        lines.append("")
+        verdict = "Deployment blocked" if failed else "Checks passed"
+        lines.append(f"**{verdict}** (fail-on: {fail_on})")
+    finally:
+        client.close()
+
+    summary = "\n".join(lines)
+    click.echo(summary.encode("ascii", "replace").decode())
+    if pr_comment:
+        pr_comment.write_text(summary + "\n", encoding="utf-8")
+    if failed:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":  # pragma: no cover

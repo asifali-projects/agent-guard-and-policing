@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import audit_log
 from ..detection.anomaly import AnomalyResult
+from ..events import bus
 from ..models import Agent, Incident, IncidentEvent, Policy, PolicyBinding, Threat
 from ..models.enums import (
     ActorType,
@@ -133,6 +134,19 @@ async def raise_behavioral_threat(
         request_id=request_id,
         metadata={"kind": "behavioral_anomaly", "signals": anomaly.signals},
     )
+    await bus.publish(
+        session,
+        organization_id=organization_id,
+        event_type="threat.detected",
+        payload={
+            "agent_id": str(agent_id),
+            "kind": "behavioral_anomaly",
+            "risk_score": anomaly.score,
+            "severity": severity.value,
+            "signals": anomaly.signals,
+            "request_id": request_id,
+        },
+    )
 
     if max(anomaly.score, risk_score) >= _AUTO_INCIDENT_AT:
         incident = Incident(
@@ -153,6 +167,17 @@ async def raise_behavioral_threat(
             kind="opened",
             message="Auto-opened from a behavioral-anomaly threat",
             data={"threat_id": str(threat.id), "signals": anomaly.signals},
+        )
+        await bus.publish(
+            session,
+            organization_id=organization_id,
+            event_type="incident.created",
+            payload={
+                "key": incident.key,
+                "title": incident.title,
+                "severity": severity.value,
+                "agent_id": str(agent_id),
+            },
         )
     return threat
 
@@ -182,6 +207,12 @@ async def transition(
         message=f"Status → {new_status.value}",
         actor_type=ActorType.user if actor_id else ActorType.system,
         actor_id=actor_label,
+    )
+    await bus.publish(
+        session,
+        organization_id=incident.organization_id,
+        event_type="incident.updated",
+        payload={"key": incident.key, "status": new_status.value, "title": incident.title},
     )
 
 

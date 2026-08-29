@@ -83,7 +83,7 @@ agentguard logs [--decision deny]    # recent audit events
 
 agentguard redteam run --agent X --profile quick --fail-on high   # CI gate (PRD §21)
 agentguard mcp scan [--server NAME]
-agentguard deploy                    # Step 9
+agentguard deploy --policies ./policies --fail-on high  # CI gate (PRD §60)
 ```
 
 `login` never echoes the key; it verifies it against the API before saving with
@@ -98,5 +98,5 @@ PRD §33.
 ## Deferred
 
 Framework adapters (LangChain / LangGraph / CrewAI tool auto-wrapping),
-async SDK, redaction of tool *outputs*, the `deploy` command (Step 9),
+async SDK, redaction of tool *outputs*, and the
 TypeScript + .NET SDKs (Step 13).

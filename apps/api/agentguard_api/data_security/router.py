@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 
 from ..auth.dependencies import DbSession, Principal, require_permission
+from ..billing import meter
 from ..dlp.detectors import DETECTORS, NEVER_EXFIL
 from ..dlp.service import DEFAULT_ACTION, scan_payload
 from ..models import DataClassificationRule, DataPolicy
@@ -54,6 +55,7 @@ class ScanOut(BaseModel):
 async def scan(body: ScanIn, db: DbSession, principal: ReadDep) -> ScanOut:
     payload = body.payload if body.payload is not None else {"text": body.text}
     result = await scan_payload(db, principal.organization_id, payload)
+    await meter("data_scans", principal.organization_id)
     return ScanOut(
         classification=result.classification,
         action=result.action,

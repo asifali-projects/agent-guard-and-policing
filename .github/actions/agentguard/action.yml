@@ -1,0 +1,78 @@
+name: "AgentGuard Security"
+description: "Validate policies and red-team your AI agents as a deploy gate (PRD §60)."
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  api-key:
+    description: "AgentGuard API key (ag_*). Store as a secret."
+    required: true
+  base-url:
+    description: "AgentGuard API base URL."
+    required: false
+    default: "https://api.agentguard.example"
+  policies:
+    description: "Directory of policy spec files to validate."
+    required: false
+    default: ""
+  agent:
+    description: "Agent name to red-team. Omit to test every agent in the environment."
+    required: false
+    default: ""
+  environment:
+    description: "development | staging | production"
+    required: false
+    default: "production"
+  profile:
+    description: "quick | standard | deep"
+    required: false
+    default: "quick"
+  fail-on:
+    description: "low | medium | high | critical — fail the job on findings at/above this."
+    required: false
+    default: "high"
+  comment:
+    description: "Post the summary as a PR comment (needs pull-requests: write)."
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Install AgentGuard CLI
+      shell: bash
+      run: pip install --quiet agentguard
+
+    - name: Run security gate
+      id: gate
+      shell: bash
+      env:
+        AGENTGUARD_API_KEY: ${{ inputs.api-key }}
+        AGENTGUARD_BASE_URL: ${{ inputs.base-url }}
+      run: |
+        set +e
+        args=(deploy --environment "${{ inputs.environment }}" --profile "${{ inputs.profile }}" \
+              --fail-on "${{ inputs.fail-on }}" --pr-comment "$RUNNER_TEMP/agentguard.md")
+        [ -n "${{ inputs.policies }}" ] && args+=(--policies "${{ inputs.policies }}")
+        [ -n "${{ inputs.agent }}" ] && args+=(--agent "${{ inputs.agent }}")
+        agentguard "${args[@]}"
+        echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+    - name: Comment on PR
+      if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const body = fs.readFileSync(process.env.RUNNER_TEMP + '/agentguard.md', 'utf8');
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body,
+          });
+
+    - name: Enforce gate
+      shell: bash
+      run: exit ${{ steps.gate.outputs.exit_code }}

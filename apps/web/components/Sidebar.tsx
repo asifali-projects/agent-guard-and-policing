@@ -33,11 +33,17 @@ const NAV: { group: string; items: { label: string; href: string }[] }[] = [
   },
   {
     group: "Developer",
-    items: [{ label: "API Keys", href: "/api-keys" }],
+    items: [
+      { label: "API Keys", href: "/api-keys" },
+      { label: "Integrations", href: "/integrations" },
+    ],
   },
   {
     group: "Administration",
-    items: [{ label: "Team", href: "/team" }],
+    items: [
+      { label: "Team", href: "/team" },
+      { label: "Billing", href: "/billing" },
+    ],
   },
 ];
 

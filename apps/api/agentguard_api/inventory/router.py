@@ -13,6 +13,7 @@ from sqlalchemy import select
 
 from .. import audit_log
 from ..auth.dependencies import DbSession, Principal, require_permission
+from ..events import bus
 from ..models import Agent, AgentIdentity, Tool
 from ..models.enums import (
     ActorType,
@@ -173,6 +174,16 @@ async def create_agent(body: AgentIn, db: DbSession, principal: AgentManage) -> 
         actor_label=principal.actor_label,
         agent_id=agent.id,
         metadata={"name": agent.name, "environment": agent.environment.value},
+    )
+    await bus.publish(
+        db,
+        organization_id=principal.organization_id,
+        event_type="agent.registered",
+        payload={
+            "agent_id": str(agent.id),
+            "agent_name": agent.name,
+            "environment": agent.environment.value,
+        },
     )
     return _agent_out(agent, identity)
 

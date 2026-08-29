@@ -12,11 +12,13 @@ from .apikeys.router import router as apikeys_router
 from .approvals.router import router as approvals_router
 from .audit.router import router as audit_router
 from .auth.router import router as auth_router
+from .billing.router import router as billing_router
 from .config import get_settings
 from .dashboard.router import router as dashboard_router
 from .data_security.router import router as data_security_router
 from .graph.router import router as graph_router
 from .incidents.router import router as incidents_router
+from .integrations.router import router as integrations_router
 from .inventory.router import agents_router, tools_router
 from .logging import configure_logging, get_logger
 from .mcp.router import router as mcp_router
@@ -79,6 +81,8 @@ app.include_router(mcp_router)
 app.include_router(redteam_router)
 app.include_router(incidents_router)
 app.include_router(graph_router)
+app.include_router(integrations_router)
+app.include_router(billing_router)
 app.include_router(runtime_router)
 
 

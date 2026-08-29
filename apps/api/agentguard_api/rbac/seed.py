@@ -18,27 +18,52 @@ from ..models import Permission, Plan, Role
 from ..models.enums import MembershipRole, PlanCode
 from .catalog import PERMISSIONS, SYSTEM_ROLE_GRANTS
 
-# PRD §64 — public plan tiers. Prices in cents; limits filled in with billing (Step 9).
+# PRD §64–65 — public plan tiers with metered limits (advisory, not hard caps).
 _PLANS: list[dict] = [
-    {"code": PlanCode.community, "name": "Community", "monthly_price_cents": 0, "is_public": True},
+    {
+        "code": PlanCode.community,
+        "name": "Community",
+        "monthly_price_cents": 0,
+        "is_public": True,
+        "limits": {"agents": 3, "users": 3, "runtime_actions": 50_000, "redteam_tests": 500},
+    },
     {
         "code": PlanCode.developer,
         "name": "Developer",
         "monthly_price_cents": 4900,
         "is_public": True,
+        "limits": {"agents": 10, "users": 5, "runtime_actions": 500_000, "redteam_tests": 5_000},
     },
-    {"code": PlanCode.team, "name": "Team", "monthly_price_cents": 29900, "is_public": True},
+    {
+        "code": PlanCode.team,
+        "name": "Team",
+        "monthly_price_cents": 29900,
+        "is_public": True,
+        "limits": {
+            "agents": 50,
+            "users": 25,
+            "runtime_actions": 5_000_000,
+            "redteam_tests": 50_000,
+        },
+    },
     {
         "code": PlanCode.business,
         "name": "Business",
         "monthly_price_cents": 99900,
         "is_public": True,
+        "limits": {
+            "agents": 250,
+            "users": 100,
+            "runtime_actions": 50_000_000,
+            "redteam_tests": 500_000,
+        },
     },
     {
         "code": PlanCode.enterprise,
         "name": "Enterprise",
         "monthly_price_cents": 0,
         "is_public": False,
+        "limits": {},
     },
 ]
 
@@ -91,6 +116,7 @@ async def _seed_plans(session: AsyncSession) -> None:
             row.name = spec["name"]
             row.monthly_price_cents = spec["monthly_price_cents"]
             row.is_public = spec["is_public"]
+            row.limits = spec["limits"]
     await session.flush()
 
 

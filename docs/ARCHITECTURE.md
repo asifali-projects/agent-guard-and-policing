@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 8)
+## 7. Current state (through Step 9)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -210,7 +210,18 @@ Verified end to end in a browser: register → run red-team → remediate a find
 - `GET /v1/audit/events.csv` (PRD §33). Frontend: Threats, Incidents, and an
   agent Graph tab.
 
-The frontend and API are now feature-complete for the core product loop
-(discover → assess → red-team → govern → protect → monitor → respond). Steps
-9–13 add integrations, enterprise SSO/SCIM, the AI analyst, and more SDKs — see
-[`ROADMAP.md`](ROADMAP.md).
+**Step 9** — integrations, CI/CD, billing ([`INTEGRATIONS.md`](INTEGRATIONS.md)):
+
+- `events/bus.py` — `publish()` fans canonical events (PRD §43) to HMAC-signed
+  webhooks + Slack / PagerDuty / SIEM integrations, best-effort inline; wired at
+  every source (blocks, threats, incidents, assessments, registrations).
+- `integrations/` — `/v1/integrations` + `/v1/webhooks` CRUD, provider catalog,
+  webhook test.
+- `billing/` — Redis usage counters on the hot path, `/v1/billing` (plans,
+  subscription, per-period usage vs advisory limits).
+- `agentguard deploy` — CI gate (validate policies + red-team + `--fail-on`) and
+  a composite GitHub Action `.github/actions/agentguard`.
+- Frontend: Integrations + Billing pages.
+
+Steps 10–13 add enterprise SSO/SCIM, multi-region, the AI security analyst, and
+the TypeScript / .NET SDKs — see [`ROADMAP.md`](ROADMAP.md).

@@ -19,7 +19,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import audit_log
 from ..auth.dependencies import Principal
+from ..billing import meter
 from ..detection import profile
+from ..events import bus
 from ..incidents import service as incidents
 from ..models import Agent, ApprovalRequest
 from ..models.enums import Decision as DbDecision
@@ -191,6 +193,8 @@ async def evaluate_runtime(
             },
         )
 
+    await meter("runtime_actions", principal.organization_id)
+
     # Learn from this call, then raise a threat if it deviated sharply.
     await profile.observe(
         session,
@@ -211,6 +215,36 @@ async def evaluate_runtime(
             anomaly=core.anomaly,
             risk_score=risk.risk_score,
             request_id=request_id,
+        )
+
+    if decision == Decision.deny:
+        await meter("runtime_blocked", principal.organization_id)
+        await bus.publish(
+            session,
+            organization_id=principal.organization_id,
+            event_type="agent.action.blocked",
+            payload={
+                "agent_id": str(req.agent_id),
+                "tool": req.tool,
+                "reason": reasons[0] if reasons else "denied",
+                "risk_score": risk.risk_score,
+                "severity": risk.severity.value,
+                "policy_key": core.policy_keys[0] if core.policy_keys else "",
+                "request_id": request_id,
+            },
+        )
+    elif decision == Decision.approval:
+        await bus.publish(
+            session,
+            organization_id=principal.organization_id,
+            event_type="agent.action.approval_required",
+            payload={
+                "agent_id": str(req.agent_id),
+                "tool": req.tool,
+                "approval_request_id": str(approval_id) if approval_id else None,
+                "risk_score": risk.risk_score,
+                "request_id": request_id,
+            },
         )
 
     return RuntimeEvaluateResponse(

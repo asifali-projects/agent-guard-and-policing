@@ -9,6 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import audit_log
+from ..billing import meter
+from ..events import bus
 from ..models import Agent, RedTeamAssessment, RedTeamFinding, RedTeamTest, Tool
 from ..models.enums import (
     ActorType,
@@ -178,5 +180,19 @@ async def run_assessment(
         actor_label=actor_label,
         agent_id=agent.id,
         metadata={"assessment_id": str(assessment.id), **counts, "findings": findings_made},
+    )
+    await meter("redteam_tests", assessment.organization_id, counts["total"])
+    await bus.publish(
+        session,
+        organization_id=assessment.organization_id,
+        event_type="redteam.completed",
+        payload={
+            "agent_id": str(agent.id),
+            "agent_name": agent.name,
+            "profile": assessment.profile.value,
+            "findings": findings_made,
+            **counts,
+            "by_severity": sev_counts,
+        },
     )
     return summary
