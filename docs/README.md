@@ -9,6 +9,8 @@
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | **System design** — planes, request paths, datastores, tenancy, tech stack, deployment topology, per-step build log |
 | [`ROADMAP.md`](ROADMAP.md) | The step-by-step implementation plan mapped to the PRD (all 15 steps 0–14 done) |
 | [`DATA_MODEL.md`](DATA_MODEL.md) | The 46 Postgres tables + the ClickHouse event tables |
+| [`CODE_TOUR.md`](CODE_TOUR.md) | Guided reading order for reviewing the codebase |
+| [`presentations/`](presentations/) | Client pitch, SDK developer guide, and engineering walkthrough (PowerPoint) |
 
 ## Per-subsystem design docs
 
