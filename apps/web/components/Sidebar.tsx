@@ -15,6 +15,8 @@ const NAV: { group: string; items: { label: string; href: string }[] }[] = [
       { label: "MCP Servers", href: "/mcp" },
       { label: "Red Team", href: "/red-team" },
       { label: "Findings", href: "/findings" },
+      { label: "Threats", href: "/threats" },
+      { label: "Incidents", href: "/incidents" },
       { label: "Approvals", href: "/approvals" },
     ],
   },

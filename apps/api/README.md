@@ -32,6 +32,9 @@ agentguard_api/
 ├── models/         SQLAlchemy 2.0 models (PRD §44) — one module per domain
 ├── events/         ClickHouse event-store schema + bootstrap (PRD §45)
 ├── dashboard/      GET /v1/dashboard/summary — "Am I safe?" (PRD §11)
+├── detection/      Per-agent behaviour baseline + anomaly scorer (PRD §28)
+├── incidents/      /v1/incidents + /v1/threats — lifecycle + response (PRD §30)
+├── graph/          /v1/agents/{id}/graph + /blast-radius (PRD §31–32)
 ├── security/       Password/JWT/API-key/TOTP primitives (no DB, no FastAPI)
 ├── auth/           Sessions, principals, OAuth, /v1/auth router (PRD §9, §51)
 ├── rbac/           Permission catalog + role grants + seed (PRD §50)
@@ -74,5 +77,4 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 
 | Step | Adds |
 |------|------|
-| 8 | Real behavioral baselines, incidents, agent graph, worker-backed deep assessments |
-| 9 | Integrations, webhooks, billing/usage endpoints |
+| 9 | Integrations, webhooks, billing/usage endpoints, GitHub Action |

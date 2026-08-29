@@ -135,26 +135,13 @@ def _destination_factor(context: dict) -> RiskFactor:
     )
 
 
-def _behavior_factor(parameters: dict) -> RiskFactor:
-    """Heuristic until Step 8: large bulk operations look anomalous."""
-    volume = 0
-    for key in ("records", "count", "limit", "batch_size", "rows", "quantity"):
-        val = parameters.get(key)
-        if isinstance(val, (int, float)):
-            volume = max(volume, int(val))
-    if volume >= 10000:
-        score = 85
-    elif volume >= 1000:
-        score = 55
-    elif volume >= 100:
-        score = 30
-    else:
-        score = 12
+def _behavior_factor(anomaly_score: int, signals: list[str]) -> RiskFactor:
+    """Deviation from the agent's learned baseline (PRD §28)."""
     return RiskFactor(
         name="behavior",
-        score=score,
+        score=_clamp(anomaly_score),
         weight=WEIGHTS["behavior"],
-        detail=f"max bulk volume={volume}" if volume else "no bulk signal",
+        detail=signals[0] if signals else "consistent with baseline",
     )
 
 
@@ -223,6 +210,8 @@ async def assess(
     parameters: dict,
     context: dict,
     dlp: DlpResult,
+    anomaly_score: int = 10,
+    anomaly_signals: list[str] | None = None,
 ) -> RiskAssessment:
     factors = [
         _identity_factor(agent, identity),
@@ -230,10 +219,16 @@ async def assess(
         _tool_factor(tool, tool_name),
         _data_factor(dlp),
         _destination_factor(context or {}),
-        _behavior_factor(parameters or {}),
+        _behavior_factor(anomaly_score, anomaly_signals or []),
         await _historical_factor(session, organization_id, agent.id),
     ]
     score = _clamp(sum(f.score * f.weight for f in factors))
+    # A severe behavioural anomaly is inherently high-risk regardless of the
+    # other factors (PRD §28 — "Behavioral anomaly — risk 94").
+    if anomaly_score >= 90:
+        score = max(score, 82)
+    elif anomaly_score >= 75:
+        score = max(score, 66)
     severity = _severity(score)
     return RiskAssessment(
         risk_score=score, severity=severity, decision=_decision(severity), factors=factors

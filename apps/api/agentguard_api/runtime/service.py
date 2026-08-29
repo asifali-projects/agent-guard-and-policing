@@ -19,6 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import audit_log
 from ..auth.dependencies import Principal
+from ..detection import profile
+from ..incidents import service as incidents
 from ..models import Agent, ApprovalRequest
 from ..models.enums import Decision as DbDecision
 from ..models.enums import RiskSeverity
@@ -187,6 +189,28 @@ async def evaluate_runtime(
                     sorted({f.detector for f in core.dlp.findings}) if core.dlp else []
                 ),
             },
+        )
+
+    # Learn from this call, then raise a threat if it deviated sharply.
+    await profile.observe(
+        session,
+        organization_id=principal.organization_id,
+        agent_id=req.agent_id,
+        tool=req.tool,
+        parameters=req.parameters,
+        context=req.context,
+        classification=core.classification,
+        anomaly_score=core.anomaly.score if core.anomaly else 0,
+    )
+    if core.anomaly and core.anomaly.is_anomalous:
+        await incidents.raise_behavioral_threat(
+            session,
+            organization_id=principal.organization_id,
+            agent_id=req.agent_id,
+            tool=req.tool,
+            anomaly=core.anomaly,
+            risk_score=risk.risk_score,
+            request_id=request_id,
         )
 
     return RuntimeEvaluateResponse(

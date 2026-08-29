@@ -11,8 +11,23 @@ import { useAuth } from "@/lib/auth";
 import { dateTime, timeAgo } from "@/lib/format";
 import type { Agent, Assessment, AuditEvent, Finding, RiskAssessment } from "@/lib/types";
 
-const TABS = ["Overview", "Security", "Findings", "Red Team", "Activity"] as const;
+const TABS = ["Overview", "Security", "Findings", "Red Team", "Graph", "Activity"] as const;
 type Tab = (typeof TABS)[number];
+
+interface GraphData {
+  nodes: { id: string; type: string; label: string; meta: Record<string, unknown> }[];
+  edges: { source: string; target: string; kind: string }[];
+}
+interface Blast {
+  agent: string;
+  tools: number;
+  databases: number;
+  apis: number;
+  mcp_servers: number;
+  external_destinations: string[];
+  data_classifications: string[];
+  potential_impact: string;
+}
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -69,6 +84,7 @@ export default function AgentDetailPage() {
       {tab === "Security" && <SecurityPosture agentId={id} />}
       {tab === "Findings" && <FindingsTab agentId={id} />}
       {tab === "Red Team" && <AssessmentsTab agentId={id} />}
+      {tab === "Graph" && <GraphTab agentId={id} />}
       {tab === "Activity" && <ActivityTab agentId={id} />}
     </>
   );
@@ -183,6 +199,58 @@ function AssessmentsTab({ agentId }: { agentId: string }) {
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+function GraphTab({ agentId }: { agentId: string }) {
+  const graph = useQuery({
+    queryKey: ["graph", agentId],
+    queryFn: () => api<GraphData>(`/v1/agents/${agentId}/graph`),
+  });
+  const blast = useQuery({
+    queryKey: ["blast", agentId],
+    queryFn: () => api<Blast>(`/v1/agents/${agentId}/blast-radius`),
+  });
+  if (graph.isLoading || blast.isLoading) return <Spinner />;
+  if (graph.error) return <ErrorBox error={graph.error} />;
+  const b = blast.data!;
+  const byType = (t: string) => graph.data!.nodes.filter((n) => n.type === t);
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="card">
+        <div className="text-xs uppercase text-muted">Blast radius (PRD §32)</div>
+        <div className="mt-1 text-2xl font-bold">
+          Potential impact:{" "}
+          <span className={b.potential_impact === "CRITICAL" ? "text-crit" : b.potential_impact === "HIGH" ? "text-bad" : "text-warn"}>
+            {b.potential_impact}
+          </span>
+        </div>
+        <ul className="mt-2 space-y-1 text-sm text-muted">
+          <li>Tools reachable: {b.tools}</li>
+          <li>Databases: {b.databases} · APIs: {b.apis}</li>
+          <li>MCP servers: {b.mcp_servers}</li>
+          <li>External destinations: {b.external_destinations.join(", ") || "none"}</li>
+          <li>Data classes handled: {b.data_classifications.join(", ") || "none"}</li>
+        </ul>
+      </div>
+      <div className="card">
+        <div className="text-xs uppercase text-muted">Reachability (PRD §31)</div>
+        {(["tool", "destination", "data", "mcp"] as const).map((t) => (
+          <div key={t} className="mt-2">
+            <div className="text-xs font-semibold capitalize text-muted">{t}s</div>
+            <div className="flex flex-wrap gap-1">
+              {byType(t).length === 0 && <span className="text-xs text-muted">—</span>}
+              {byType(t).map((n) => (
+                <span key={n.id} className="rounded bg-panel2 px-1.5 py-0.5 text-xs">
+                  {n.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

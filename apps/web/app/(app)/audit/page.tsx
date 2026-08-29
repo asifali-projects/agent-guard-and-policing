@@ -4,9 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { DecisionBadge, ErrorBox, PageHeader, Row, Spinner, Table } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, API_BASE, tokens } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 import type { AuditEvent } from "@/lib/types";
+
+async function downloadCsv() {
+  const res = await fetch(`${API_BASE}/v1/audit/events.csv`, {
+    headers: { Authorization: `Bearer ${tokens.access}` },
+  });
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "agentguard-audit.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function AuditPage() {
   const [decision, setDecision] = useState("");
@@ -29,15 +42,20 @@ export default function AuditPage() {
         title="Audit Log"
         subtitle="Append-only, tamper-evident (PRD §33)"
         actions={
-          chain.data ? (
-            <span
-              className={`rounded px-2 py-1 text-xs ${
-                chain.data.intact ? "bg-ok/15 text-ok" : "bg-bad/15 text-bad"
-              }`}
-            >
-              chain {chain.data.intact ? "intact" : "BROKEN"} · {chain.data.event_count} events
-            </span>
-          ) : null
+          <div className="flex items-center gap-2">
+            {chain.data && (
+              <span
+                className={`rounded px-2 py-1 text-xs ${
+                  chain.data.intact ? "bg-ok/15 text-ok" : "bg-bad/15 text-bad"
+                }`}
+              >
+                chain {chain.data.intact ? "intact" : "BROKEN"} · {chain.data.event_count} events
+              </span>
+            )}
+            <button className="btn" onClick={downloadCsv}>
+              Export CSV
+            </button>
+          </div>
         }
       />
       <div className="mb-3">

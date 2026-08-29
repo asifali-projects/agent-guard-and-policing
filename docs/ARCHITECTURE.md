@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 7)
+## 7. Current state (through Step 8)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -195,6 +195,22 @@ See [`DATA_MODEL.md`](DATA_MODEL.md).
 Verified end to end in a browser: register → run red-team → remediate a finding
 (Create policy → Retest → resolved).
 
+**Step 8** — detection, incidents, graph ([`DETECTION.md`](DETECTION.md)):
+
+- `detection/` — per-agent `behavior_profiles` (upserted on every runtime call)
+  + a pure anomaly scorer that replaces the Step 4 behaviour heuristic in the
+  risk engine and floors the composite risk on a severe anomaly.
+- Anomalous calls raise `threats` (deduped) and auto-open `Incident`s at
+  score ≥ 85.
+- `incidents/` — `/v1/incidents` + `/v1/threats`: lifecycle transitions,
+  timeline, and response actions (`pause_agent` → runtime denies the agent
+  entirely; `block_tool` → auto deny policy).
+- `graph/` — `/v1/agents/{id}/graph` and `/blast-radius` (PRD §31–32) built from
+  the behaviour profile + grants.
+- `GET /v1/audit/events.csv` (PRD §33). Frontend: Threats, Incidents, and an
+  agent Graph tab.
+
 The frontend and API are now feature-complete for the core product loop
-(discover → assess → red-team → govern → protect → monitor). Steps 8–13 add
-enterprise + intelligence layers — see [`ROADMAP.md`](ROADMAP.md).
+(discover → assess → red-team → govern → protect → monitor → respond). Steps
+9–13 add integrations, enterprise SSO/SCIM, the AI analyst, and more SDKs — see
+[`ROADMAP.md`](ROADMAP.md).

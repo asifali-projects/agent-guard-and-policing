@@ -36,8 +36,11 @@ they drift.
 | Integrations | `integration.py` | `integrations`, `webhooks` |
 | Billing | `billing.py` | `plans`, `subscriptions`, `usage_records`, `invoices` |
 | Audit | `audit.py` | `audit_events` (append-only, hash-chained) |
+| Auth (Step 2) | `auth.py` | `sessions`, `external_identities` |
+| Detection (Step 8) | `detection.py` | `behavior_profiles` (per-agent baseline) |
 
-36 tables total.
+39 tables. Migrations: `0001` initial · `0002` auth · `0003` tz-aware datetimes ·
+`0004` behavior_profiles.
 
 ### Notable relationships
 

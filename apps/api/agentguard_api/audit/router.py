@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import csv
+import io
 import uuid
 from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select, tuple_
 
@@ -96,6 +99,71 @@ async def list_events(
             for r in rows
         ],
         next_cursor=next_cursor,
+    )
+
+
+_EXPORT_COLUMNS = [
+    "occurred_at",
+    "action",
+    "actor_type",
+    "actor_id",
+    "agent_id",
+    "agent_version",
+    "tool",
+    "action_verb",
+    "policy_key",
+    "risk_score",
+    "decision",
+    "trace_id",
+    "request_id",
+    "payload_hash",
+    "prev_hash",
+    "entry_hash",
+]
+
+
+@router.get("/events.csv")
+async def export_events(
+    db: DbSession,
+    principal: ReadDep,
+    since: datetime | None = None,
+    limit: Annotated[int, Query(ge=1, le=100_000)] = 10_000,
+) -> StreamingResponse:
+    stmt = select(AuditEvent).where(AuditEvent.organization_id == principal.organization_id)
+    if since:
+        stmt = stmt.where(AuditEvent.occurred_at >= since)
+    stmt = stmt.order_by(AuditEvent.occurred_at.asc(), AuditEvent.id.asc()).limit(limit)
+    rows = list((await db.scalars(stmt)).all())
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(_EXPORT_COLUMNS)
+    for r in rows:
+        w.writerow(
+            [
+                r.occurred_at.isoformat(),
+                r.action,
+                r.actor_type.value,
+                r.actor_id or "",
+                r.agent_id or "",
+                r.agent_version or "",
+                r.tool or "",
+                r.action or "",
+                r.policy_key or "",
+                r.risk_score if r.risk_score is not None else "",
+                r.decision.value if r.decision else "",
+                r.trace_id or "",
+                r.request_id or "",
+                r.payload_hash or "",
+                r.prev_hash or "",
+                r.entry_hash,
+            ]
+        )
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=agentguard-audit.csv"},
     )
 
 

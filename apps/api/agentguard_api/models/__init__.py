@@ -13,6 +13,7 @@ from .auth import ExternalIdentity, Session
 from .base import Base
 from .billing import Invoice, Plan, Subscription, UsageRecord
 from .data_security import DataClassificationRule, DataPolicy
+from .detection import BehaviorProfile
 from .incident import Incident, IncidentEvent, Threat
 from .integration import Integration, Webhook
 from .mcp import McpServer, McpTool
@@ -41,6 +42,7 @@ __all__ = [
     "ApprovalRequest",
     "AuditEvent",
     "Base",
+    "BehaviorProfile",
     "DataClassificationRule",
     "DataPolicy",
     "ExternalIdentity",

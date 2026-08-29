@@ -15,11 +15,14 @@ from agentguard_policy import Decision, EvaluationInput, RateLimitSpec, evaluate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..detection.anomaly import AnomalyResult, score_anomaly
+from ..detection.profile import as_dict, load_profile
 from ..dlp.service import DlpResult, scan_payload
 from ..models import Agent, AgentIdentity, Tool
-from ..models.enums import DlpAction
+from ..models.enums import AgentStatus, DlpAction, RiskSeverity
 from ..risk import RiskAssessment
 from ..risk import assess as assess_risk
+from ..risk.schemas import RiskFactor
 from .loader import load_policy_set
 
 _PRECEDENCE = (
@@ -42,6 +45,7 @@ class CoreDecision:
     cache_hit: bool = False
     risk: RiskAssessment | None = None
     dlp: DlpResult | None = None
+    anomaly: AnomalyResult | None = None
     agent: Agent | None = None
     identity: AgentIdentity | None = None
     tool: Tool | None = None
@@ -104,6 +108,41 @@ async def core_decision(
     dlp = await scan_payload(session, organization_id, parameters)
     classification = dlp.classification.value if dlp.classification else data_classification
 
+    profile = await load_profile(session, agent.id)
+    anomaly = score_anomaly(
+        as_dict(profile),
+        tool=tool,
+        parameters=parameters,
+        context=context,
+        classification=classification,
+    )
+
+    # A paused agent is denied everything (incident response — PRD §30).
+    if agent.status == AgentStatus.paused:
+        return CoreDecision(
+            decision=Decision.deny,
+            reasons=["agent is paused"],
+            classification=classification,
+            dlp=dlp,
+            anomaly=anomaly,
+            risk=RiskAssessment(
+                risk_score=100,
+                severity=RiskSeverity.critical,
+                decision="BLOCK",
+                factors=[
+                    RiskFactor(
+                        name="identity",
+                        score=100,
+                        weight=1.0,
+                        detail="agent is paused by incident response",
+                    )
+                ],
+            ),
+            agent=agent,
+            identity=identity,
+            tool=tool_row,
+        )
+
     policies, cache_hit = await load_policy_set(
         session,
         organization_id=organization_id,
@@ -136,6 +175,8 @@ async def core_decision(
         parameters=parameters,
         context=context,
         dlp=dlp,
+        anomaly_score=anomaly.score,
+        anomaly_signals=anomaly.signals,
     )
 
     decision, reasons = combine(
@@ -158,6 +199,7 @@ async def core_decision(
         cache_hit=cache_hit,
         risk=risk,
         dlp=dlp,
+        anomaly=anomaly,
         agent=agent,
         identity=identity,
         tool=tool_row,

@@ -88,25 +88,41 @@ async def test_risk_score_endpoint_breakdown(api):
     assert body["factors"] and abs(sum(f["weight"] for f in body["factors"]) - 1.0) < 1e-6
 
 
-async def test_risk_escalates_low_policy_decision(api):
+async def test_behavioral_anomaly_escalates_risk(api):
     org, h, agent, tool = await _setup(api, tool_risk="critical", tool_perms=["admin"])
-    # confidential data allowed, so DLP won't escalate — risk must.
     await api.post(
         "/v1/data-security/policies",
         json={"name": "allow-pii", "classification": "confidential", "action": "allow"},
         headers=h,
     )
+    # Build a baseline of small internal reads.
+    for _ in range(10):
+        r = await _evaluate(
+            api,
+            h,
+            agent["id"],
+            "customer.read",
+            parameters={"records": 5},
+            context={"destination": "internal"},
+        )
+        assert r["decision"] == "ALLOW"
+
+    # Now a wildly out-of-profile call: unseen tool, huge volume, external.
     res = await _evaluate(
         api,
         h,
         agent["id"],
         "customer.export",
-        parameters={"to": "jane@example.com", "records": 50000},
+        parameters={"records": 5_000_000},
         context={"destination": "external"},
     )
     assert res["decision"] in ("APPROVAL", "DENY")
     assert res["risk_severity"] in ("high", "critical")
     assert any("risk score" in r for r in res["reasons"])
+
+    threats = await api.get("/v1/threats", headers=h)
+    assert threats.status_code == 200
+    assert any(t["kind"] == "behavioral_anomaly" for t in threats.json())
 
 
 async def test_never_exfil_key_always_blocked(api):
