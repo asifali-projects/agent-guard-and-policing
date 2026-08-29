@@ -8,16 +8,19 @@ from agentguard import AgentGuard
 
 guard = AgentGuard(api_key="ag_live_...", agent="FinanceAgent", environment="production")
 
+
 @guard.tool
 def send_email(to, subject, body):
-    ...        # runs only if the runtime returns ALLOW; REDACT masks flagged args
+    ...   # runs only if the runtime returns ALLOW; REDACT masks flagged args
 ```
 
 ```
-agentguard login          # save an API key
+agentguard login                 # save an API key
 agentguard agents list
 agentguard policy validate rules.json
-agentguard scan           # per-agent risk posture
+agentguard scan                  # per-agent risk posture
+agentguard redteam run --agent FinanceAgent --profile quick --fail-on high
+agentguard mcp scan
 agentguard logs
 ```
 

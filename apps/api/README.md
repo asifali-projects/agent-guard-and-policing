@@ -42,7 +42,9 @@ agentguard_api/
 ├── dlp/            Pure detectors + classification + action resolution (PRD §27)
 ├── risk/           7-factor risk engine + /v1/risk router (PRD §26)
 ├── data_security/  /v1/data-security — scan, classifications, data policies
-├── runtime/        POST /v1/runtime/evaluate — DLP + policy + risk (PRD §24–27, §42)
+├── redteam/        Attack catalog + sandbox + evaluator, /v1/redteam (PRD §18–22)
+├── mcp/            /v1/mcp servers + heuristic scan (PRD §17)
+├── runtime/        core.py (side-effect-free) + POST /v1/runtime/evaluate (PRD §24–27, §42)
 ├── audit/          /v1/audit/events + /v1/audit/verify (PRD §33)
 ├── audit_log.py    Append-only hash-chained audit writer (PRD §33)
 └── routers/
@@ -71,6 +73,5 @@ See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
 
 | Step | Adds |
 |------|------|
-| 6 | Red-team assessment + findings endpoints |
-| 8 | Real behavioral baselines, incidents, agent graph |
+| 8 | Real behavioral baselines, incidents, agent graph, worker-backed deep assessments |
 | 9 | Integrations, webhooks, billing/usage endpoints |

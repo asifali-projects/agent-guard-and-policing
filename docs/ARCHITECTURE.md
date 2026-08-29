@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 5)
+## 7. Current state (through Step 6)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -168,5 +168,20 @@ See [`DATA_MODEL.md`](DATA_MODEL.md).
 - API: `GET /v1/audit/events` (filters + keyset pagination) and
   `GET /v1/audit/verify` (per-org hash-chain recompute).
 
-Everything past Step 5 is still a `README.md` placeholder — see
+**Step 6** — red-team engine ([`REDTEAM.md`](REDTEAM.md)):
+
+- `runtime/core.py` — `core_decision` (DLP + policy + risk, **no writes**)
+  extracted so both `evaluate_runtime` and the red-team sandbox share one path.
+- `redteam/` — 21-technique catalog across all six PRD §19 categories, a
+  generator/sandbox runner, an evaluator that judges the observed decision
+  against each technique's "defended" set, and upserted `redteam_findings`.
+- `/v1/redteam` — assessments (inline), technique catalog, and the PRD §22
+  finding actions: remediation-policy synthesis, incident creation, retest,
+  suppress, false-positive, assign.
+- `mcp/` — minimal MCP server inventory + a heuristic §17 scan
+  (`/v1/mcp/servers`, `.../scan`).
+- CLI: `agentguard redteam run --fail-on <sev>` (CI gate, PRD §21) and
+  `agentguard mcp scan`.
+
+Everything past Step 6 is still a `README.md` placeholder — see
 [`ROADMAP.md`](ROADMAP.md).

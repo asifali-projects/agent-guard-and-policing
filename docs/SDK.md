@@ -81,8 +81,8 @@ agentguard policy validate rules.json
 agentguard scan                      # per-agent risk posture summary
 agentguard logs [--decision deny]    # recent audit events
 
-agentguard redteam run               # Step 6
-agentguard mcp scan                  # Step 6
+agentguard redteam run --agent X --profile quick --fail-on high   # CI gate (PRD §21)
+agentguard mcp scan [--server NAME]
 agentguard deploy                    # Step 9
 ```
 
@@ -98,5 +98,5 @@ PRD §33.
 ## Deferred
 
 Framework adapters (LangChain / LangGraph / CrewAI tool auto-wrapping),
-async SDK, ret/redaction of tool *outputs*, the `redteam` / `mcp` / `deploy`
-commands (Steps 6 & 9), TypeScript + .NET SDKs (Step 13).
+async SDK, redaction of tool *outputs*, the `deploy` command (Step 9),
+TypeScript + .NET SDKs (Step 13).

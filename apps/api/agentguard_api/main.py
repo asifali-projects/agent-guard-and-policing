@@ -15,8 +15,10 @@ from .config import get_settings
 from .data_security.router import router as data_security_router
 from .inventory.router import agents_router, tools_router
 from .logging import configure_logging, get_logger
+from .mcp.router import router as mcp_router
 from .organizations.router import router as organizations_router
 from .policies.router import router as policies_router
+from .redteam.router import router as redteam_router
 from .risk.router import router as risk_router
 from .routers import health
 from .runtime.router import router as runtime_router
@@ -60,6 +62,8 @@ app.include_router(approvals_router)
 app.include_router(data_security_router)
 app.include_router(risk_router)
 app.include_router(audit_router)
+app.include_router(mcp_router)
+app.include_router(redteam_router)
 app.include_router(runtime_router)
 
 

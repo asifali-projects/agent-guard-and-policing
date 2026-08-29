@@ -1,21 +1,18 @@
 # services/red-team
 
-Offensive security engine (Python). A **first-class product**, not an add-on
-(PRD §18).
+Offensive security engine (PRD §18–22).
 
-Pipeline (PRD §20):
+**The engine is implemented in the API** at `apps/api/agentguard_api/redteam/`
+(Step 6) — catalog, sandbox, evaluator, findings — see
+[`../../docs/REDTEAM.md`](../../docs/REDTEAM.md). Assessments run inline because
+each test is a sub-millisecond `core_decision`.
 
-```
-Target Agent → Attack Planner → Attack Generator → Execution Sandbox
-            → Observation → Evaluator → Risk Classification → Finding
-```
+This directory is reserved for the **worker-backed** offensive work:
 
-Every test records: Attack ID, Category, Technique, Input, Expected Security
-Behavior, Observed Behavior, Severity, Evidence, Recommendation.
+- `deep` / `enterprise` profiles and large custom runs, executed off the queue
+- continuous red-team triggers (PRD §21): re-test on deploy / model / prompt /
+  tool / MCP change
+- LLM-assisted attack generation and adaptive/iterative attacks
+- driving a live agent endpoint directly (not just replaying tool calls)
 
-Attack categories (PRD §19): Prompt, Tool, Data, Agent, MCP, Availability.
-
-Assessment profiles (PRD §18): Quick, Standard, Deep, Enterprise, Custom.
-
-Implemented in **Step 6**. Continuous / CI-triggered red-teaming (PRD §21) is
-wired in the same step.
+Wired in Step 8 alongside the event workers.

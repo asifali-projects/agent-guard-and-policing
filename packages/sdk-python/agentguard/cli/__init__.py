@@ -13,7 +13,7 @@ from .. import config as _config
 from ..client import Client
 from ..exceptions import AgentGuardError
 
-_COMING = {"redteam": 6, "mcp": 6, "deploy": 9}
+_COMING = {"deploy": 9}
 
 
 def _client(ctx: click.Context) -> Client:
@@ -181,28 +181,100 @@ def logs(ctx: click.Context, limit: int, decision: str | None) -> None:
         )
 
 
-def _stub(name: str) -> None:
-    step = _COMING[name]
-    click.echo(f"`agentguard {name}` is not available yet — arrives in Step {step}.", err=True)
-    raise SystemExit(2)
+_SEVERITY_RANK = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 
 
-@main.command()
+@main.group()
 def redteam() -> None:
-    """Run a red-team assessment (Step 6)."""
-    _stub("redteam")
+    """AI red-team assessments (PRD §18)."""
 
 
-@main.command()
+@redteam.command("run")
+@click.option("--agent", envvar="AGENTGUARD_AGENT", help="Target agent name.")
+@click.option(
+    "--environment",
+    type=click.Choice(["development", "staging", "production"]),
+    default="production",
+    show_default=True,
+)
+@click.option(
+    "--profile",
+    type=click.Choice(["quick", "standard", "deep", "enterprise"]),
+    default="standard",
+    show_default=True,
+)
+@click.option(
+    "--fail-on",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+    default=None,
+    help="Exit non-zero if any open finding is at or above this severity (CI gate).",
+)
+@click.pass_context
+def redteam_run(
+    ctx: click.Context, agent: str | None, environment: str, profile: str, fail_on: str | None
+) -> None:
+    """Launch an assessment and print the result (PRD §21 CI gate)."""
+    if not agent:
+        raise click.ClickException("--agent is required (or set AGENTGUARD_AGENT)")
+    client = _client(ctx)
+    try:
+        agent_id = client.resolve_agent_id(name=agent, environment=environment)
+        a = client.post(
+            "/v1/redteam/assessments",
+            json={"agent_id": agent_id, "profile": profile, "environment": environment},
+        )
+        s = a["summary"]
+        click.echo(f"{agent}: {s['passed']}/{s['total']} defended, {s['failed']} finding(s)")
+        for sev in ("critical", "high", "medium", "low"):
+            n = s.get("by_severity", {}).get(sev, 0)
+            if n:
+                click.echo(f"  {sev:<9} {n}")
+        if fail_on:
+            findings = client.get("/v1/redteam/findings", agent_id=agent_id, status="open")
+            threshold = _SEVERITY_RANK[fail_on]
+            blockers = [f for f in findings if _SEVERITY_RANK.get(f["severity"], 0) >= threshold]
+            if blockers:
+                click.echo(f"\n{len(blockers)} finding(s) at/above {fail_on} — failing.", err=True)
+                for f in blockers:
+                    click.echo(f"  [{f['severity']}] {f['title']}", err=True)
+                raise SystemExit(1)
+    finally:
+        client.close()
+
+
+@main.group()
 def mcp() -> None:
-    """Scan an MCP server (Step 6)."""
-    _stub("mcp")
+    """MCP server security (PRD §17)."""
+
+
+@mcp.command("scan")
+@click.option("--server", "server_name", default=None, help="Scan one server by name.")
+@click.pass_context
+def mcp_scan(ctx: click.Context, server_name: str | None) -> None:
+    client = _client(ctx)
+    try:
+        servers = client.get("/v1/mcp/servers")
+        if server_name:
+            servers = [s for s in servers if s["name"] == server_name]
+            if not servers:
+                raise click.ClickException(f"no MCP server named {server_name!r}")
+        if not servers:
+            click.echo("no MCP servers registered")
+            return
+        for s in servers:
+            result = client.post(f"/v1/mcp/servers/{s['id']}/scan")
+            issues = ", ".join(result["issues"]) or "clean"
+            click.echo(f"{s['name']:<24} {result['severity']:<9} {result['status']:<16} {issues}")
+    finally:
+        client.close()
 
 
 @main.command()
 def deploy() -> None:
     """Deploy-time security gate (Step 9)."""
-    _stub("deploy")
+    step = _COMING["deploy"]
+    click.echo(f"`agentguard deploy` arrives in Step {step}.", err=True)
+    raise SystemExit(2)
 
 
 if __name__ == "__main__":  # pragma: no cover
