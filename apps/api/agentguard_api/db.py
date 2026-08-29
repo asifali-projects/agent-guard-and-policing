@@ -28,10 +28,17 @@ def get_engine() -> AsyncEngine:
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
+    """FastAPI dependency: commit on success, roll back on error."""
     get_engine()
     assert _sessionmaker is not None
     async with _sessionmaker() as session:
-        yield session
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        else:
+            await session.commit()
 
 
 async def ping() -> bool:

@@ -22,7 +22,10 @@ class Settings(BaseSettings):
         default="development", alias="AGENTGUARD_ENV"
     )
     log_level: str = Field(default="INFO", alias="AGENTGUARD_LOG_LEVEL")
-    secret_key: str = Field(default="dev-only-insecure-change-me", alias="AGENTGUARD_SECRET_KEY")
+    secret_key: str = Field(
+        default="dev-only-insecure-change-me-0000000000000000",
+        alias="AGENTGUARD_SECRET_KEY",
+    )
 
     # --- datastores ---
     database_url: str = Field(
@@ -38,6 +41,25 @@ class Settings(BaseSettings):
     # --- object storage ---
     s3_endpoint_url: str = Field(default="http://localhost:9002", alias="S3_ENDPOINT_URL")
     s3_bucket: str = Field(default="agentguard-artifacts", alias="S3_BUCKET")
+
+    # --- auth / sessions (PRD §51) ---
+    jwt_algorithm: str = Field(default="HS256", alias="AGENTGUARD_JWT_ALG")
+    access_token_ttl_seconds: int = Field(default=900, alias="AGENTGUARD_ACCESS_TTL")  # 15 min
+    refresh_token_ttl_seconds: int = Field(
+        default=60 * 60 * 24 * 30, alias="AGENTGUARD_REFRESH_TTL"
+    )  # 30 days
+    mfa_issuer: str = Field(default="AgentGuard", alias="AGENTGUARD_MFA_ISSUER")
+    allow_open_registration: bool = Field(default=True, alias="AGENTGUARD_OPEN_REGISTRATION")
+
+    # --- OAuth (PRD §9). Each provider is enabled only when its pair is set. ---
+    oauth_redirect_base_url: str = Field(
+        default="http://localhost:8010", alias="AGENTGUARD_OAUTH_REDIRECT_BASE"
+    )
+    google_client_id: str | None = Field(default=None, alias="GOOGLE_CLIENT_ID")
+    google_client_secret: str | None = Field(default=None, alias="GOOGLE_CLIENT_SECRET")
+    microsoft_client_id: str | None = Field(default=None, alias="MICROSOFT_CLIENT_ID")
+    microsoft_client_secret: str | None = Field(default=None, alias="MICROSOFT_CLIENT_SECRET")
+    microsoft_tenant: str = Field(default="common", alias="MICROSOFT_TENANT")
 
     @property
     def is_production(self) -> bool:

@@ -7,8 +7,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from . import __version__, cache, db
+from .apikeys.router import router as apikeys_router
+from .auth.router import router as auth_router
 from .config import get_settings
 from .logging import configure_logging, get_logger
+from .organizations.router import router as organizations_router
 from .routers import health
 
 settings = get_settings()
@@ -40,6 +43,9 @@ app = FastAPI(
 )
 
 app.include_router(health.router)
+app.include_router(auth_router)
+app.include_router(organizations_router)
+app.include_router(apikeys_router)
 
 
 @app.get("/", tags=["meta"], summary="Service banner")

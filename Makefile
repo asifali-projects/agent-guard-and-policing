@@ -7,7 +7,7 @@ PY := $(API_DIR)/.venv/bin/python
 .DEFAULT_GOAL := help
 .PHONY: help infra-up infra-down infra-clean infra-logs infra-ps up down \
         api-install api-dev api-test api-lint web-install web-dev fmt \
-        db-migrate db-check db-downgrade events-migrate
+        db-migrate db-check db-downgrade db-seed events-migrate
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -48,6 +48,8 @@ db-check: ## Fail if models drifted from migrations
 	cd $(API_DIR) && .venv/bin/python -m alembic check
 db-downgrade: ## Roll back the last migration
 	cd $(API_DIR) && .venv/bin/python -m alembic downgrade -1
+db-seed: ## Seed RBAC catalog + plans (idempotent)
+	cd $(API_DIR) && .venv/bin/python -m agentguard_api.rbac.seed
 events-migrate: ## Apply the ClickHouse event-store schema
 	cd $(API_DIR) && .venv/bin/python -m agentguard_api.events.migrate
 

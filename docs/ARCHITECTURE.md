@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 1)
+## 7. Current state (through Step 2)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -111,5 +111,22 @@ OpenAPI), `apps/web` Next.js skeleton, CI, this document set.
   `runtime_decisions`, `behavior_events` (PRD §45) — applied by
   `python -m agentguard_api.events.migrate`.
 
-See [`DATA_MODEL.md`](DATA_MODEL.md). Everything past Step 1 is still a
-`README.md` placeholder — see [`ROADMAP.md`](ROADMAP.md).
+See [`DATA_MODEL.md`](DATA_MODEL.md).
+
+**Step 2** — authentication, tenancy, RBAC ([`AUTH.md`](AUTH.md)):
+
+- Password (Argon2id) + OAuth (Google / Microsoft) login; JWT access tokens +
+  rotating opaque refresh tokens with reuse detection and device tracking;
+  TOTP MFA.
+- `Principal` abstraction — a request authenticates as a user or an API key, both
+  resolving to an org + a permission set. `require_permission(...)` gates
+  endpoints.
+- Built-in 7-role RBAC over a 31-permission catalog (`rbac/catalog.py`), seeded
+  into the DB by `python -m agentguard_api.rbac.seed`.
+- API key system (PRD §52): `ag_<env>_<id>_<secret>`, Argon2-hashed, scoped
+  (≤ creator's permissions), IP allowlist, expiry, revoke.
+- Audit log writer with per-org hash chain + `verify_chain()`.
+- 24 endpoints under `/v1/auth`, `/v1/organizations`, `.../api-keys`.
+
+Everything past Step 2 is still a `README.md` placeholder — see
+[`ROADMAP.md`](ROADMAP.md).

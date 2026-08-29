@@ -37,6 +37,7 @@ jobs:
       - run: ruff format --check .
       - run: alembic upgrade head
       - run: alembic check
+      - run: python -m agentguard_api.rbac.seed
       - run: pytest -q
 
   web:

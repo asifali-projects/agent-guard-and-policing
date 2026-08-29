@@ -38,6 +38,7 @@ AgentGuard tasks:
   db-revision     Autogenerate a migration from model changes:  .\tasks.ps1 db-revision "message"
   db-check        Fail if models have drifted from migrations
   db-downgrade    Roll back the last migration
+  db-seed         Seed the RBAC catalog + built-in plans (idempotent)
   events-migrate  Apply the ClickHouse event-store schema
 
   web-install     Install web dashboard dependencies
@@ -94,6 +95,11 @@ AgentGuard tasks:
     "db-downgrade" {
         Push-Location "$Root/apps/api"
         try { & ".venv/Scripts/python.exe" -m alembic downgrade -1 }
+        finally { Pop-Location }
+    }
+    "db-seed" {
+        Push-Location "$Root/apps/api"
+        try { & ".venv/Scripts/python.exe" -m agentguard_api.rbac.seed }
         finally { Pop-Location }
     }
     "events-migrate" {

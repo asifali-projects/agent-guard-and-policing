@@ -31,27 +31,34 @@ agentguard_api/
 ├── cache.py        Redis client + ping()
 ├── models/         SQLAlchemy 2.0 models (PRD §44) — one module per domain
 ├── events/         ClickHouse event-store schema + bootstrap (PRD §45)
+├── security/       Password/JWT/API-key/TOTP primitives (no DB, no FastAPI)
+├── auth/           Sessions, principals, OAuth, /v1/auth router (PRD §9, §51)
+├── rbac/           Permission catalog + role grants + seed (PRD §50)
+├── organizations/  /v1/organizations + members router
+├── apikeys/        /v1/organizations/{id}/api-keys router (PRD §52)
+├── audit_log.py    Append-only hash-chained audit writer (PRD §33)
 └── routers/
     └── health.py   /healthz, /readyz
-migrations/         Alembic (async) — initial schema in versions/
+migrations/         Alembic (async) — versions/
 ```
 
 ## Database
 
 ```powershell
 # from the repo root, with infra running
-.\tasks.ps1 db-migrate        # alembic upgrade head
-.\tasks.ps1 events-migrate     # ClickHouse event tables
-.\tasks.ps1 db-check           # fail if models drifted from migrations
+.\tasks.ps1 db-migrate         # alembic upgrade head
+.\tasks.ps1 db-seed            # RBAC catalog + plans (idempotent)
+.\tasks.ps1 events-migrate      # ClickHouse event tables
+.\tasks.ps1 db-check            # fail if models drifted from migrations
 ```
 
-See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md).
+See [`../../docs/DATA_MODEL.md`](../../docs/DATA_MODEL.md) and
+[`../../docs/AUTH.md`](../../docs/AUTH.md).
 
 ## Roadmap inside this package
 
 | Step | Adds |
 |------|------|
-| 2 | Auth (OAuth/OIDC/SAML), org/tenant scoping, RBAC, API keys |
 | 3 | `POST /v1/runtime/evaluate`, policy hierarchy, decision engine |
 | 4 | Risk engine + DLP hooks |
 | 6 | Red-team assessment + findings endpoints |

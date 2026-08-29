@@ -9,6 +9,7 @@ from __future__ import annotations
 from .agent import Agent, AgentIdentity, AgentVersion
 from .approval import ApprovalDecision, ApprovalRequest
 from .audit import AuditEvent
+from .auth import ExternalIdentity, Session
 from .base import Base
 from .billing import Invoice, Plan, Subscription, UsageRecord
 from .data_security import DataClassificationRule, DataPolicy
@@ -42,6 +43,7 @@ __all__ = [
     "Base",
     "DataClassificationRule",
     "DataPolicy",
+    "ExternalIdentity",
     "Incident",
     "IncidentEvent",
     "Integration",
@@ -60,6 +62,7 @@ __all__ = [
     "RedTeamTest",
     "Role",
     "ServiceAccount",
+    "Session",
     "Subscription",
     "Threat",
     "Tool",
