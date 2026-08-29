@@ -1,9 +1,23 @@
-# Python SDK & CLI (Step 5)
+# SDKs & CLI (Steps 5, 13)
 
-Covers PRD §36 (CLI), §37 (SDK responsibilities), §38 (examples), §71 (fast DX).
+Covers PRD §36 (CLI), §37 (SDK responsibilities), §38 (examples), §39–40
+(TypeScript / .NET), §71 (fast DX).
+
+Three first-party SDKs, all **open-source** (PRD §68) and behaviourally
+identical — the same identity model, the same five decisions, the same
+fail-safe, and a bundled `agentguard` CLI:
+
+| Language | Package | Directory | Step |
+|---|---|---|---|
+| Python | `agentguard` (PyPI) | `packages/sdk-python/` | 5 |
+| TypeScript / JS | `@agentguard/sdk` (npm) | `packages/sdk-typescript/` | 13 |
+| .NET | `AgentGuard.NET` (NuGet) | `packages/sdk-dotnet/` | 13 |
+
+The rest of this page describes the Python SDK in detail; the TypeScript and
+.NET ports mirror it — see [§ Parity SDKs](#parity-sdks) for the mapping.
 
 Package: **`agentguard`** in `packages/sdk-python/` — the SDK and the CLI ship
-together, so `pip install agentguard` gives you both. **Open-source** (PRD §68).
+together, so `pip install agentguard` gives you both.
 
 ## SDK
 
@@ -95,8 +109,36 @@ agentguard deploy --policies ./policies --fail-on high  # CI gate (PRD §60)
 pagination) and `GET /v1/audit/verify` (recompute the per-org hash chain) —
 PRD §33.
 
+<a id="parity-sdks"></a>
+
+## Parity SDKs (Step 13)
+
+`@agentguard/sdk` (TypeScript) and `AgentGuard.NET` (.NET 8) implement the same
+contract against `POST /v1/runtime/evaluate`. Both have **zero third-party
+runtime dependencies** (built-in `fetch` / `HttpClient` + `System.Text.Json`).
+
+| Concept | Python | TypeScript | .NET |
+|---|---|---|---|
+| Facade | `AgentGuard(...)` | `new AgentGuard({...})` | `new AgentGuardClient(new AgentGuardOptions {...})` |
+| Enforce + run | `@guard.tool` decorator | `guard.tool(fn)` (async wrapper) | `guard.GuardAsync(tool, params, invoke)` |
+| Evaluate only | `guard.evaluate(...)` | `guard.evaluate(...)` | `guard.EvaluateAsync(...)` |
+| Enforce + redact | `guard.check(...)` | `guard.check(...)` | `guard.CheckAsync(...)` |
+| Approval poll | `guard.wait_for_approval(id)` | `guard.waitForApproval(id)` | `guard.WaitForApprovalAsync(id)` |
+| Raw control plane | `guard.client.get(...)` | `guard.client.get(...)` | `guard.Api.GetAsync(...)` |
+| Config file | `~/.agentguard/config.toml` | `~/.agentguard/config.json` | `~/.agentguard/config.json` |
+| Errors | `PolicyDenied` / `ApprovalRequired` / `RateLimited` | same names | `PolicyDeniedException` / `ApprovalRequiredException` / `RateLimitedException` |
+
+The tool wrapper in the TS and .NET SDKs takes a **single object of named
+parameters** (rather than binding a Python signature), which is how OpenAI /
+LangChain / Semantic Kernel already invoke tools — so `REDACT` can map the
+runtime's paths back onto the arguments. .NET also ships
+`services.AddAgentGuard(...)` for DI. Each package's `README.md` has the
+language-native examples; the CLI (`agentguard login | whoami | agents list |
+policy validate | scan | logs | redteam run | mcp scan | deploy`) is identical
+across all three.
+
 ## Deferred
 
-Framework adapters (LangChain / LangGraph / CrewAI tool auto-wrapping),
-async SDK, redaction of tool *outputs*, and the
-TypeScript + .NET SDKs (Step 13).
+Framework adapters (LangChain / LangGraph / CrewAI / Semantic Kernel tool
+auto-wrapping), async Python SDK, redaction of tool *outputs*, streaming, and
+publishing to PyPI / npm / NuGet.

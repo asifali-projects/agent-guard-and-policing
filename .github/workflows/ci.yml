@@ -38,6 +38,37 @@ jobs:
       - run: ruff format --check .
       - run: pytest -q
 
+  sdk-typescript:
+    name: sdk-typescript — typecheck + test + build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/sdk-typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  sdk-dotnet:
+    name: sdk-dotnet — build + test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/sdk-dotnet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet build src/AgentGuard/AgentGuard.csproj -warnaserror
+      - run: dotnet build tools/AgentGuard.Cli/AgentGuard.Cli.csproj
+      - run: dotnet test tests/AgentGuard.Tests/AgentGuard.Tests.csproj
+
   api:
     name: api — lint + test
     runs-on: ubuntu-latest

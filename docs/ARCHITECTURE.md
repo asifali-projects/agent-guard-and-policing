@@ -93,7 +93,7 @@ dedicated database / deployment.
 > a single-language core; the .NET SDK (§39) is still delivered in Step 13. This
 > decision is recorded in [`adr/0001-python-first-backend.md`](adr/0001-python-first-backend.md).
 
-## 7. Current state (through Step 12)
+## 7. Current state (all 14 steps complete)
 
 **Step 0** — repo layout, `infra/docker-compose.yml` (all six backing services
 with health checks), `apps/api` FastAPI skeleton (`/`, `/healthz`, `/readyz`,
@@ -263,4 +263,18 @@ Verified end to end in a browser: register → run red-team → remediate a find
 - `analyst/asgi.py` + the `ai-analyst` compose service run it as an independent
   container off the same image. Chat UI at `/analyst`.
 
-Step 13 adds the TypeScript / .NET SDKs — see [`ROADMAP.md`](ROADMAP.md).
+**Step 13** — TypeScript + .NET SDKs ([`SDK.md`](SDK.md)):
+
+- `packages/sdk-typescript` (`@agentguard/sdk`) — zero-dependency ESM, built-in
+  `fetch`, `node:test`. `guard.tool(fn)` wraps an async tool that takes a single
+  named-parameter object.
+- `packages/sdk-dotnet` (`AgentGuard.NET`) — `net8.0`, `HttpClient` +
+  `System.Text.Json`, xunit. `guard.GuardAsync(tool, params, invoke)` plus a
+  `services.AddAgentGuard(...)` DI helper.
+- Both mirror the Python SDK's contract exactly — identity resolution, the five
+  decisions, path-based redaction, `fail_mode` closed/open, and an identical
+  `agentguard` CLI (`login`, `agents list`, `policy validate`, `scan`, `logs`,
+  `redteam run`, `mcp scan`, `deploy`). New CI jobs `sdk-typescript` and
+  `sdk-dotnet`.
+
+All 14 steps (0–13) are complete.

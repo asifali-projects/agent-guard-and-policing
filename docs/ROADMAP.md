@@ -2,8 +2,7 @@
 
 The PRD ([`../agent-police-prd.docx`](../agent-police-prd.docx)) describes the
 full target product. It is deliberately **not** MVP-scoped. Execution is
-sequenced into 14 steps. Steps 0–12 are complete; Step 13 adds the remaining
-multi-language SDKs.
+sequenced into 14 steps. **All 14 steps (0–13) are complete.**
 
 Legend: ☐ not started · ◐ in progress · ☑ done
 
@@ -22,7 +21,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 | 10 | Enterprise SSO | Generic OIDC (discovery + JWKS `id_token` verification) and SAML 2.0 (signed-assertion verification via `signxml`, no libxmlsec), `sso_connections` model + migration, domain-based discovery `/v1/auth/sso/discover`, IdP redirect + OIDC callback + SAML ACS, JIT user provisioning, enforced-SSO password block, `/v1/organizations/{id}/sso` CRUD + SP metadata, login + callback + settings UI. See [`SSO.md`](SSO.md) | §9, §51 | ☑ |
 | 11 | SCIM provisioning | SCIM 2.0 `/scim/v2` (Users + Groups, RFC 7643/7644), per-org bearer token, `eq` filtering, PatchOp, JIT provisioning into `memberships`, `active:false` deprovision (+ session revoke), group-name→role mapping (most-privileged wins), `/v1/organizations/{id}/scim` admin + token rotation, SSO & SCIM UI panel. See [`SCIM.md`](SCIM.md) | §51 | ☑ |
 | 12 | AI Security Analyst | `agentguard_api/analyst/` — read-only NL Q&A: 9-tool org-scoped read library, Claude tool-use loop with a deterministic fallback router, `/v1/analyst` (ask + conversations, `analyst.query` perm), per-org hourly quota, audited queries, `analyst/asgi.py` standalone service + `ai-analyst` compose service, chat UI. See [`ANALYST.md`](ANALYST.md) | §35 | ☑ |
-| 13 | TypeScript + .NET SDKs | `@agentguard/sdk`, `AgentGuard.NET` | §37, §39–40 | ☐ |
+| 13 | TypeScript + .NET SDKs | `@agentguard/sdk` (`packages/sdk-typescript`, zero-dep, `node:test`) and `AgentGuard.NET` (`packages/sdk-dotnet`, net8.0, xunit) — both mirror the Python SDK: identity, 5 decisions, redaction, fail-safe, `agentguard` CLI; .NET adds `AddAgentGuard(...)` DI. CI jobs for both. See [`SDK.md`](SDK.md) | §37, §39–40 | ☑ |
 
 ## Mapping to PRD engineering phases (§87)
 
@@ -32,6 +31,7 @@ Legend: ☐ not started · ◐ in progress · ☑ done
 - **Phase D — Platform:** Steps 7–9 (dashboard, graph, analytics, incidents, integrations)
 - **Phase E — Enterprise:** Steps 10–11
 - **Phase F — Intelligence:** Steps 8, 12 (behavioral detection, AI analyst)
+- **Phase G — Ecosystem:** Steps 5, 13 (Python / TypeScript / .NET SDKs + CLI)
 
 ## Explicitly deferred (PRD §88)
 

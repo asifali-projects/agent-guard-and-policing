@@ -38,10 +38,10 @@ agent-guard/
 │   └── web/           Next.js dashboard (TypeScript / React)
 ├── packages/
 │   ├── policy-engine/ Deterministic policy evaluation library (Python)
-│   ├── sdk-python/    agentguard — Python SDK
-│   ├── sdk-typescript/ @agentguard/sdk — TypeScript SDK
-│   ├── sdk-dotnet/    AgentGuard.NET — .NET SDK
-│   └── cli/           agentguard — developer CLI (Python)
+│   ├── sdk-python/    agentguard — Python SDK + CLI
+│   ├── sdk-typescript/ @agentguard/sdk — TypeScript SDK + CLI
+│   ├── sdk-dotnet/    AgentGuard.NET — .NET SDK + CLI
+│   └── cli/           reserved for a future standalone CLI distribution
 ├── services/
 │   ├── red-team/      Offensive security engine: attack planner → evaluator → findings
 │   ├── risk-engine/   Multi-factor risk scoring
@@ -113,20 +113,25 @@ make infra-down         # stop backing services (add `make infra-clean` to wipe 
 
 ## Status
 
-**Step 0 — Repo + infra scaffold.** In place:
+**All 14 implementation steps (0–13) are complete.** See
+[`docs/ROADMAP.md`](docs/ROADMAP.md) for the per-step breakdown.
 
-- Monorepo directory structure
-- `infra/docker-compose.yml` with all six backing services + health checks
-- FastAPI `apps/api` skeleton: config, `/healthz`, `/readyz` (checks Postgres +
-  Redis), OpenAPI docs, one passing test
-- Next.js `apps/web` skeleton
-- `Makefile` with common tasks
-- GitHub Actions CI skeleton (lint + test)
-- `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, first ADR
+- **Control plane + runtime** (`apps/api`) — auth/tenancy/RBAC, the deterministic
+  policy engine + `POST /v1/runtime/evaluate`, the 7-factor risk engine + DLP,
+  red-team engine, behavioral detection, incidents, agent graph, integrations +
+  webhooks, billing/metering, enterprise SSO (SAML/OIDC), SCIM 2.0, and the AI
+  Security Analyst.
+- **Dashboard** (`apps/web`) — Next.js 14, the full PRD §8 information
+  architecture.
+- **SDKs + CLI** — Python (`agentguard`), TypeScript (`@agentguard/sdk`), and
+  .NET (`AgentGuard.NET`), all behaviourally identical.
+- **Docs** — one design doc per subsystem under [`docs/`](docs), plus ADRs.
 
-Not yet implemented (later steps): database schema + migrations, auth, policy
-engine, runtime evaluation, risk engine, DLP, SDKs, red-team engine, dashboard
-features, integrations, billing. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Per-subsystem docs: [`AUTH`](docs/AUTH.md) · [`POLICY`](docs/POLICY.md) ·
+[`RISK_DLP`](docs/RISK_DLP.md) · [`SDK`](docs/SDK.md) · [`REDTEAM`](docs/REDTEAM.md) ·
+[`WEB`](docs/WEB.md) · [`DETECTION`](docs/DETECTION.md) ·
+[`INTEGRATIONS`](docs/INTEGRATIONS.md) · [`SSO`](docs/SSO.md) ·
+[`SCIM`](docs/SCIM.md) · [`ANALYST`](docs/ANALYST.md).
 
 ---
 

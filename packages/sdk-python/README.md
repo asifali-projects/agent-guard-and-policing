@@ -51,4 +51,6 @@ agentguard/
 └── cli/            the `agentguard` command (click)
 ```
 
-TypeScript and .NET SDKs follow in **Step 13**.
+The TypeScript ([`../sdk-typescript`](../sdk-typescript)) and .NET
+([`../sdk-dotnet`](../sdk-dotnet)) SDKs mirror this contract — see
+[`../../docs/SDK.md`](../../docs/SDK.md).
