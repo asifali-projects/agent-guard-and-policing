@@ -1,7 +1,12 @@
 # Architecture
 
-This document tracks the **target** architecture from the PRD and the current
-state of the code. It is updated as each step lands.
+The system design of AgentGuard: planes, request paths, datastores, tenancy,
+tech stack, and a per-step build log. All 15 steps (0–14) are implemented.
+
+**See also:** [`MANUAL.md`](MANUAL.md) — what every feature does and how to use
+it · [`RUNNING.md`](RUNNING.md) — setup, configuration, deployment ·
+[`DATA_MODEL.md`](DATA_MODEL.md) — the 46 Postgres tables · [`adr/`](adr/) —
+decision records.
 
 ## 1. Product principle
 
@@ -74,8 +79,13 @@ verbosity (redacted / metadata-only / full) is customer-controlled.
 
 Every resource carries `organization_id`. Authorization chain:
 `User → Organization → Role → Resource`. Roles: Owner, Admin, Security Admin,
-Security Analyst, Developer, Auditor, Billing Admin. Enterprise tier can get a
-dedicated database / deployment.
+Security Analyst, Developer, Auditor, Billing Admin (7 roles over a
+32-permission catalog — see [`MANUAL.md` §23](MANUAL.md#23-permission-reference)).
+
+**Data residency (PRD §76):** each organization is pinned to one region
+(`us` / `eu` / `me` / `apac`) at creation. A region is a *fully isolated
+deployment* — see [§8](#8-deployment-topology) and
+[ADR 0002](adr/0002-multi-region-data-residency.md).
 
 ## 6. Tech stack
 
@@ -293,3 +303,47 @@ Verified end to end in a browser: register → run red-team → remediate a find
   turns a 421 into a "continue in the right region" link.
 
 All steps (0–14) are complete.
+
+## 8. Deployment topology
+
+```
+        ┌─────────────────────────  REGION: us  ─────────────────────────┐
+ DNS →  │  edge / TLS                                                     │
+        │      │                                                          │
+        │   apps/web (Next.js)  ── NEXT_PUBLIC_API_BASE_URL ──►  apps/api │
+        │   ai-analyst  ────────────────────────────────────────►  (FastAPI, stateless, scale-out)
+        │      │                                                     │    │
+        │   Postgres   Redis   Redpanda   ClickHouse   Qdrant   MinIO     │
+        └────────────────────────────────────────────────────────────────┘
+        ┌─────────────────────────  REGION: eu  ─────────────────────────┐
+        │  identical, separate infrastructure, own AGENTGUARD_SECRET_KEY  │
+        └────────────────────────────────────────────────────────────────┘
+```
+
+- **One deployment = one region** (`AGENTGUARD_REGION`). No cross-region
+  database, no global router in the app tier. `GET /v1/regions` is the only
+  cross-region knowledge (a static discovery map, `AGENTGUARD_REGIONS`).
+- **`apps/api`** is stateless — sessions, rate-limit counters, usage counters,
+  and the policy cache live in Redis. Scale horizontally behind the gateway.
+- **`ai-analyst`** is the same image as `apps/api` with a different entrypoint
+  (`agentguard_api.analyst.asgi:app`); deploy and scale it independently.
+- **`apps/workers`** (`apps/workers/`) is scaffolded for the event-stream tier
+  (ClickHouse-backed baselines, campaign detection); the synchronous
+  detection / risk / DLP paths run in-process in the API today.
+- **Local dev** collapses this to `infra/docker-compose.yml` — one of every
+  backing service plus `api`, `ai-analyst`, `web` under the `apps` profile.
+  See [`RUNNING.md`](RUNNING.md).
+
+## 9. Cross-cutting concerns
+
+| Concern | How |
+|---|---|
+| **Determinism on the hot path** | `POST /v1/runtime/evaluate` makes no LLM call; policy set is Redis-cached; target p95 < 50 ms. |
+| **Fail-safe** | per-agent `fail_mode` (open / closed / safe-by-tool); the SDK applies it when the API is unreachable. |
+| **Data minimisation** | audit + events store hashes + metadata + classification + risk + decision, not raw prompts/payloads (PRD §75). |
+| **Tamper evidence** | the audit log is an append-only per-org SHA-256 hash chain, serialised by a Postgres advisory lock; `GET /v1/audit/verify` recomputes it. |
+| **Tenant isolation** | every query filters on `organization_id`; the `Principal` binds the org, endpoints double-check path vs. token. |
+| **Residency isolation** | `regions.assert_servable()` → `421` for any org not homed in this deployment's region. |
+| **Secrets** | Argon2id for passwords + API-key secrets; HS256 JWTs; opaque hashed refresh tokens; MFA/SSO/SCIM secrets flagged for encryption at rest (PRD §75). |
+| **Logging** | structlog JSON; OpenTelemetry is the intended tracing layer (PRD §57). |
+| **Best-effort side-channels** | event-bus delivery and usage metering swallow all errors — they never break a runtime decision. |
