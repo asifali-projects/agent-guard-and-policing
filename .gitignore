@@ -43,3 +43,6 @@ infra/**/data/
 # Build artifacts / evidence
 /artifacts/
 /tmp/
+
+
+.claude/
