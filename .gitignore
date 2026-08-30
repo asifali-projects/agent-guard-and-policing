@@ -47,3 +47,4 @@ infra/**/data/
 
 .claude/
 *.docx
+/docs/presentations/*.pptx
